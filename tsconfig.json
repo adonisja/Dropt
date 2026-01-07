@@ -1,0 +1,37 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "types": [
+      "vitest/globals"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
+    "nativewind-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
