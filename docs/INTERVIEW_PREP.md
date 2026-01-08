@@ -2,7 +2,156 @@
 
 This document captures interview-style questions discussed during the development of the Dropt application, along with user responses and instructor feedback. It serves as a resource for reviewing key software engineering concepts encountered in the project.
 
-## 1. Frontend Architecture & Data Modeling
+---
+
+## Recent Features & Architecture (2026-01-07)
+
+### 6. Security & Logging Infrastructure
+
+**Context:**
+We implemented a structured logger utility and migrated 200+ console statements across the codebase to use it, replacing raw `console.log/error` calls.
+
+**Question:**
+"Why is it important to have a structured logging system in production applications, and what are the security risks of using raw console.log statements?"
+
+**Expected Answer Points:**
+1. **Security Risks of Raw Console Logging:**
+   - Exposes sensitive data in production builds (error stack traces, user data)
+   - `JSON.stringify()` on error objects can leak system internals
+   - No control over what gets logged in different environments
+   - Potential GDPR/CCPA violations if PII is logged without controls
+
+2. **Benefits of Structured Logging:**
+   - **Contextual Information:** `source`, `userId`, `data` fields make debugging easier
+   - **Production Safety:** Use feature flags (`__DEV__`) to suppress logs in production
+   - **Privacy Compliance:** Control what data is logged and where
+   - **Performance:** Reduce logging overhead in production
+   - **Correlation:** Track errors across distributed systems with consistent context
+
+**Implementation Pattern:**
+```typescript
+// ❌ Bad - Raw console with potential data exposure
+console.error('Error fetching courses:', JSON.stringify(errors, null, 2));
+
+// ✅ Good - Structured logger with context
+logger.error('Error fetching courses', {
+  source: 'fetchStudentCourses',
+  userId: studentId,  // Pseudonymous identifier
+  data: { errors }    // Structured error context
+});
+```
+
+**Follow-up Question:**
+"How do you ensure GDPR compliance when logging user data?"
+
+**Expected Answer:**
+- Log only **pseudonymous identifiers** (UUIDs, not emails/names)
+- Use **legitimate interest** basis (Article 6) for security/debugging
+- Implement **data minimization** (only log what's necessary)
+- **Suppress logs in production** except for critical errors
+- Document logging practices in privacy policy
+
+---
+
+### 7. Platform-Agnostic Theme System
+
+**Context:**
+We migrated from NativeWind CSS classes to a platform-agnostic theme system using `hexColors` to support both React Native and web platforms.
+
+**Question:**
+"Why can't you use CSS variables like `bg-background` or `text-foreground` directly in React Native, and how did you solve this cross-platform challenge?"
+
+**Expected Answer:**
+1. **React Native Limitation:**
+   - React Native uses JavaScript StyleSheet API, not CSS
+   - No support for CSS custom properties (variables)
+   - NativeWind v4 can't resolve CSS variables at runtime on mobile
+
+2. **Solution - HSL to Hex Conversion:**
+   ```typescript
+   // theme-styles.ts
+   function hslToHex(h: number, s: number, l: number): string {
+     // Convert HSL to RGB to Hex
+     // Returns: '#1a1a1a' for dark mode background
+   }
+   
+   const hexColors = {
+     background: hslToHex(0, 0, isDark ? 10 : 100),
+     foreground: hslToHex(0, 0, isDark ? 98 : 10),
+     // ... 20+ theme colors
+   };
+   ```
+
+3. **Platform Consistency:**
+   - Web: Uses CSS variables via Tailwind
+   - Mobile: Uses computed hex colors from theme context
+   - Single source of truth for color values
+
+**Follow-up Question:**
+"What is the advantage of using a time-based auto theme (6PM-6AM dark) versus system theme detection?"
+
+**Expected Answer:**
+- **Predictability:** Users get consistent experience regardless of OS settings
+- **User Comfort:** Automatic dark mode during evening hours reduces eye strain
+- **Cross-platform Consistency:** Web, iOS, Android all behave the same way
+- **Trade-off:** Less respect for user's explicit OS preference
+
+---
+
+### 8. Semester-Based Lifecycle Management
+
+**Context:**
+We implemented automatic semester transition detection that archives old data and resets per-semester statistics while preserving lifetime totals.
+
+**Question:**
+"How do you handle data that needs to be both time-bound (per semester) AND cumulative (all-time), like task completion statistics?"
+
+**Expected Answer:**
+1. **Dual Statistics Model:**
+   ```typescript
+   interface UserSettings {
+     // Current semester (resets each semester)
+     currentSemester: string;  // "Spring 2026"
+     currentYear: number;       // 2026
+     
+     // Per-semester stats (reset)
+     tasksCompleted: number;
+     tasksMissed: number;
+     
+     // Lifetime stats (cumulative)
+     totalTasksCompleted: number;
+     totalTasksMissed: number;
+     totalTasksEver: number;
+   }
+   ```
+
+2. **Transition Logic:**
+   - Detect semester change using `detectCurrentSemester()`
+   - Archive current semester data before resetting
+   - Update lifetime totals: `totalTasksCompleted += tasksCompleted`
+   - Reset per-semester counters to 0
+
+3. **Benefits:**
+   - Users see progress within current semester (motivation)
+   - Lifetime stats show long-term achievement (gamification)
+   - Historical data preserved for analytics
+
+**Follow-up Question:**
+"What happens if a user doesn't open the app for an entire semester?"
+
+**Expected Answer:**
+- **Challenge:** Data might be lost if transition happens without app launch
+- **Solution Options:**
+  1. **Server-side cron job** to trigger transitions automatically
+  2. **Catch-up logic** to detect missed transitions and archive retroactively
+  3. **Grace period** to allow late submission before archiving
+- **Current Implementation:** Client-side detection on app launch (MVP)
+
+---
+
+## Original Interview Questions
+
+### 1. Frontend Architecture & Data Modeling
 
 **Context:**
 In `app/(student)/tools/calculator.tsx`, we created a local interface `AssignmentSimulation` instead of using the raw backend data type directly.

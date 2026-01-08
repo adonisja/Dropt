@@ -25,6 +25,13 @@ All notable changes to the Dropt project will be documented in this file.
   - Protected backend schema structure from public exposure
   - Migrated all console statements to structured logger (200+ instances)
   - Implemented GDPR/CCPA-compliant logging practices
+  - Added user data controls for privacy compliance (export, delete, clear semester)
+
+- **User Data Controls** (`lib/utils/user-data-controls.ts`):
+  - **Export My Data**: GDPR Article 15 compliance - download all user data as JSON
+  - **Delete Account**: GDPR Article 17 compliance - permanent account and data deletion
+  - **Clear Semester Data**: Reset current semester while preserving lifetime statistics
+  - Privacy-first implementation with comprehensive error handling
 
 - **Semester-Based Deadline Tracking**:
   - Deadline tracker now operates on current semester only

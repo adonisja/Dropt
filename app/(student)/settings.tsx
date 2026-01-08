@@ -8,12 +8,16 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { useTheme } from '@/lib/theme/theme-context';
 import { seedTestCourses } from '@/lib/api/seed-data';
 import { logger } from '@/lib/utils/logger';
+import { exportUserData, deleteAllUserData, clearSemesterData } from '@/lib/utils/user-data-controls';
 
 export default function Settings() {
     const { user, logout } = useAuth();
     const { theme, themeMode, setThemeMode, hexColors, isDark } = useTheme();
     const [showThemeModal, setShowThemeModal] = useState(false);
     const [isSeeding, setIsSeeding] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isClearingSemester, setIsClearingSemester] = useState(false);
     const [devModeCount, setDevModeCount] = useState(0);
 
     const handleLogout = async () => {
@@ -90,6 +94,160 @@ export default function Settings() {
                     { 
                         text: "Seed Data", 
                         onPress: runSeed
+                    }
+                ]
+            );
+        }
+    };
+
+    const handleExportData = async () => {
+        if (!user?.id) return;
+
+        const runExport = async () => {
+            setIsExporting(true);
+            try {
+                const result = await exportUserData(user.id);
+                if (result.success) {
+                    if (Platform.OS === 'web') {
+                        alert("Success: Your data has been downloaded.");
+                    } else {
+                        Alert.alert("Success", "Your data has been exported. Check your device's share menu.");
+                    }
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to export data';
+                if (Platform.OS === 'web') {
+                    alert(`Error: ${errorMessage}`);
+                } else {
+                    Alert.alert("Error", errorMessage);
+                }
+            } finally {
+                setIsExporting(false);
+            }
+        };
+
+        if (Platform.OS === 'web') {
+            // @ts-ignore - confirm is available on web
+            if (confirm("Export My Data: This will download all your academic data as a JSON file. Continue?")) {
+                await runExport();
+            }
+        } else {
+            Alert.alert(
+                "Export My Data",
+                "This will export all your academic data (courses, assignments, grades, statistics) to a file you can save or share.",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Export", onPress: runExport }
+                ]
+            );
+        }
+    };
+
+    const handleClearSemester = async () => {
+        if (!user?.id) return;
+
+        const runClear = async () => {
+            setIsClearingSemester(true);
+            try {
+                const result = await clearSemesterData(user.id);
+                if (result.success) {
+                    if (Platform.OS === 'web') {
+                        alert("Success: Current semester data has been cleared. Lifetime statistics preserved.");
+                    } else {
+                        Alert.alert("Success", "Current semester data has been cleared. Lifetime statistics preserved.");
+                    }
+                    // Optionally refresh or navigate away
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to clear semester data';
+                if (Platform.OS === 'web') {
+                    alert(`Error: ${errorMessage}`);
+                } else {
+                    Alert.alert("Error", errorMessage);
+                }
+            } finally {
+                setIsClearingSemester(false);
+            }
+        };
+
+        if (Platform.OS === 'web') {
+            // @ts-ignore - confirm is available on web
+            if (confirm("Clear Semester Data: This will delete all courses and assignments from the current semester. Your lifetime statistics will be preserved. This action cannot be undone. Are you sure?")) {
+                await runClear();
+            }
+        } else {
+            Alert.alert(
+                "Clear Semester Data",
+                "This will delete all courses and assignments from the current semester. Your lifetime statistics will be preserved.\n\nThis action cannot be undone.",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Clear", style: "destructive", onPress: runClear }
+                ]
+            );
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!user?.id) return;
+
+        const runDelete = async () => {
+            setIsDeleting(true);
+            try {
+                const result = await deleteAllUserData(user.id);
+                if (result.success) {
+                    // Account deleted, redirect to login
+                    if (Platform.OS === 'web') {
+                        alert("Your account and all data have been permanently deleted.");
+                    } else {
+                        Alert.alert("Account Deleted", "Your account and all data have been permanently deleted.");
+                    }
+                    router.replace('/(auth)/login');
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Failed to delete account';
+                if (Platform.OS === 'web') {
+                    alert(`Error: ${errorMessage}`);
+                } else {
+                    Alert.alert("Error", errorMessage);
+                }
+                setIsDeleting(false);
+            }
+        };
+
+        if (Platform.OS === 'web') {
+            // @ts-ignore - confirm is available on web
+            if (confirm("DELETE ACCOUNT: This will permanently delete your account and ALL data. This action CANNOT be undone. Are you absolutely sure?")) {
+                // @ts-ignore - confirm is available on web
+                if (confirm("FINAL WARNING: Type your email to confirm deletion. This is your last chance to cancel.")) {
+                    await runDelete();
+                }
+            }
+        } else {
+            Alert.alert(
+                "Delete Account",
+                "This will permanently delete your account and ALL data (courses, assignments, grades, statistics).\n\nThis action CANNOT be undone.",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { 
+                        text: "Delete Forever", 
+                        style: "destructive", 
+                        onPress: () => {
+                            // Second confirmation
+                            Alert.alert(
+                                "Final Confirmation",
+                                "Are you absolutely sure? There is no way to recover your data after deletion.",
+                                [
+                                    { text: "Cancel", style: "cancel" },
+                                    { text: "Yes, Delete Everything", style: "destructive", onPress: runDelete }
+                                ]
+                            );
+                        }
                     }
                 ]
             );
@@ -211,10 +369,87 @@ export default function Settings() {
                         </View>
                     </Animated.View>
 
+                    {/* Privacy & Data Section */}
+                    <Animated.View 
+                        entering={FadeInDown.delay(300).springify()}
+                        className="mb-8"
+                    >
+                        <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
+                            Privacy & Data
+                        </Text>
+                        <View className="rounded-2xl" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border, overflow: 'hidden' }}>
+                            <TouchableOpacity 
+                                className="flex-row items-center justify-between p-4 border-b border-border"
+                                activeOpacity={0.7}
+                                onPress={handleExportData}
+                                disabled={isExporting}
+                            >
+                                <View className="flex-row items-center flex-1">
+                                    <View className="w-9 h-9 rounded-lg bg-blue-500/10 items-center justify-center mr-3">
+                                        <Ionicons name="download" size={18} color="#3B82F6" />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-base font-medium text-foreground">
+                                            {isExporting ? "Exporting..." : "Export My Data"}
+                                        </Text>
+                                        <Text className="text-xs text-muted-foreground mt-0.5">
+                                            Download all your data as JSON
+                                        </Text>
+                                    </View>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={theme.colors.mutedForeground} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity 
+                                className="flex-row items-center justify-between p-4 border-b border-border"
+                                activeOpacity={0.7}
+                                onPress={handleClearSemester}
+                                disabled={isClearingSemester}
+                            >
+                                <View className="flex-row items-center flex-1">
+                                    <View className="w-9 h-9 rounded-lg bg-orange-500/10 items-center justify-center mr-3">
+                                        <Ionicons name="refresh" size={18} color="#F97316" />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-base font-medium text-foreground">
+                                            {isClearingSemester ? "Clearing..." : "Clear Semester Data"}
+                                        </Text>
+                                        <Text className="text-xs text-muted-foreground mt-0.5">
+                                            Reset current semester, keep lifetime stats
+                                        </Text>
+                                    </View>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={theme.colors.mutedForeground} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity 
+                                className="flex-row items-center justify-between p-4"
+                                activeOpacity={0.7}
+                                onPress={handleDeleteAccount}
+                                disabled={isDeleting}
+                            >
+                                <View className="flex-row items-center flex-1">
+                                    <View className="w-9 h-9 rounded-lg bg-destructive/10 items-center justify-center mr-3">
+                                        <Ionicons name="trash" size={18} color={theme.colors.destructive} />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-base font-medium text-destructive">
+                                            {isDeleting ? "Deleting..." : "Delete Account"}
+                                        </Text>
+                                        <Text className="text-xs text-muted-foreground mt-0.5">
+                                            Permanently delete all data
+                                        </Text>
+                                    </View>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={theme.colors.destructive} />
+                            </TouchableOpacity>
+                        </View>
+                    </Animated.View>
+
                     {/* Developer Tools - Only visible for admins or if enabled */}
                     {(user?.role === 'admin' || devModeCount >= 5) && (
                         <Animated.View 
-                            entering={FadeInDown.delay(300).springify()}
+                            entering={FadeInDown.delay(400).springify()}
                             className="mb-8"
                         >
                             <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
@@ -243,7 +478,7 @@ export default function Settings() {
 
                     {/* Logout Button */}
                     <Animated.View 
-                        entering={FadeInDown.delay(400).springify()}
+                        entering={FadeInDown.delay(500).springify()}
                         className="mb-8"
                     >
                         <TouchableOpacity
