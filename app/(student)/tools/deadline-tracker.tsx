@@ -22,40 +22,46 @@ interface AssignmentWithCourse {
     maxScore: number;
 }
 
-const StatsCard = ({ title, value, icon, color, bgColor }: { title: string, value: number, icon: keyof typeof Ionicons.glyphMap, color: string, bgColor: string }) => (
-    <View className="flex-1 bg-card p-4 rounded-2xl border border-border shadow-sm mx-1.5">
-        <View className="flex-row items-center gap-3">
-            <View className={`w-10 h-10 rounded-xl items-center justify-center ${bgColor}`}>
-                <Ionicons name={icon} size={20} color={color} />
-            </View>
-            <View>
-                <Text className="text-2xl font-bold text-foreground">{value}</Text>
-                <Text className="text-xs text-muted-foreground font-medium">{title}</Text>
+const StatsCard = ({ title, value, icon, color, bgColor }: { title: string, value: number, icon: keyof typeof Ionicons.glyphMap, color: string, bgColor: string }) => {
+    const { hexColors } = useTheme();
+    return (
+        <View className="flex-1  p-4 rounded-2xl shadow-sm mx-1.5" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}>
+            <View className="flex-row items-center gap-3">
+                <View className={`w-10 h-10 rounded-xl items-center justify-center ${bgColor}`}>
+                    <Ionicons name={icon} size={20} color={color} />
+                </View>
+                <View>
+                    <Text className="text-2xl font-bold " style={{ color: hexColors.foreground }}>{value}</Text>
+                    <Text className="text-xs  font-medium" style={{ color: hexColors.mutedForeground }}>{title}</Text>
+                </View>
             </View>
         </View>
-    </View>
-);
+    );
+};
 
-const EmptyState = () => (
-    <View className="items-center justify-center py-20 px-4">
-        <LinearGradient
-            colors={['#0D9488', '#0EA5E9']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="w-20 h-20 rounded-3xl items-center justify-center mb-6 shadow-sm"
-        >
-            <Ionicons name="calendar-outline" size={40} color="white" />
-        </LinearGradient>
-        <Text className="text-xl font-bold text-foreground mb-2">No Assignments Yet</Text>
-        <Text className="text-sm text-muted-foreground text-center max-w-[250px]">
-            Add courses or assignments to start tracking your deadlines and stay on top of your work.
-        </Text>
-    </View>
-);
+const EmptyState = () => {
+    const { hexColors } = useTheme();
+    return (
+        <View className="items-center justify-center py-20 px-4">
+            <LinearGradient
+                colors={['#0D9488', '#0EA5E9']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-20 h-20 rounded-3xl items-center justify-center mb-6 shadow-sm"
+            >
+                <Ionicons name="calendar-outline" size={40} color="white" />
+            </LinearGradient>
+            <Text className="text-xl font-bold mb-2" style={{ color: hexColors.foreground }}>No Assignments Yet</Text>
+            <Text className="text-sm  text-center max-w-[250px]" style={{ color: hexColors.mutedForeground }}>
+                Add courses or assignments to start tracking your deadlines and stay on top of your work.
+            </Text>
+        </View>
+    );
+};
 
 export default function DeadlineTracker() {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const [isLoading, setIsLoading] = useState(true);
     const [assignments, setAssignments] = useState<AssignmentWithCourse[]>([]);
     const [refreshing, setRefreshing] = useState(false);
@@ -202,7 +208,7 @@ export default function DeadlineTracker() {
             className="mb-3"
         >
             <TouchableOpacity 
-                className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden flex-row"
+                className="rounded-2xl borderWidth: 1, borderColor: hexColors.border shadow-sm overflow-hidden flex-row"
                 activeOpacity={0.7}
             >
                 {/* Status Bar Edge */}
@@ -215,10 +221,10 @@ export default function DeadlineTracker() {
                     {/* Card Header */}
                     <View className="flex-row justify-between items-start mb-3">
                         <View className="flex-1 mr-4">
-                            <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
+                            <Text className="text-base font-semibold " style={{ color: hexColors.foreground }} numberOfLines={1}>
                                 {item.name}
                             </Text>
-                            <Text className="text-sm text-muted-foreground font-medium mt-0.5">
+                            <Text className="text-sm  font-medium mt-0.5" style={{ color: hexColors.mutedForeground }}>
                                 {item.courseName}
                             </Text>
                         </View>
@@ -239,7 +245,7 @@ export default function DeadlineTracker() {
                     <View className="flex-row justify-between items-center">
                         <View className="flex-row items-center">
                             <Ionicons name="calendar-outline" size={16} color={theme.colors.mutedForeground} />
-                            <Text className="text-sm text-muted-foreground ml-2 font-medium">
+                            <Text className="text-sm  ml-2 font-medium" style={{ color: hexColors.mutedForeground }}>
                                 {formatDueDate(item.dateDue)}
                             </Text>
                         </View>
@@ -269,18 +275,18 @@ export default function DeadlineTracker() {
     }, {} as Record<string, AssignmentWithCourse[]>);
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <Stack.Screen options={{ headerShown: false }} />
             <SafeAreaView className="flex-1">
                 {/* Header */}
-                <View className="px-4 py-3 border-b border-border/50 flex-row items-center justify-between bg-background/80">
+                <View className="px-4 py-3 border-b border-border/50 flex-row items-center justify-between /80" style={{ backgroundColor: hexColors.background }}>
                     <TouchableOpacity 
                         onPress={() => router.back()}
                         className="w-10 h-10 rounded-full bg-secondary/50 items-center justify-center"
                     >
                         <Ionicons name="arrow-back" size={20} color={theme.colors.foreground} />
                     </TouchableOpacity>
-                    <Text className="text-lg font-bold text-foreground">Deadline Tracker</Text>
+                    <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>Deadline Tracker</Text>
                     <TouchableOpacity 
                         onPress={onRefresh}
                         className="w-10 h-10 rounded-full bg-secondary/50 items-center justify-center"
@@ -303,10 +309,10 @@ export default function DeadlineTracker() {
                     >
                         {/* Current Semester Header */}
                         <View className="mb-4">
-                            <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            <Text className="text-sm font-semibold  uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>
                                 Current Semester
                             </Text>
-                            <Text className="text-2xl font-bold text-foreground">
+                            <Text className="text-2xl font-bold " style={{ color: hexColors.foreground }}>
                                 {currentSemester} {currentYear}
                             </Text>
                         </View>
@@ -337,10 +343,10 @@ export default function DeadlineTracker() {
                         </View>
 
                         {/* Lifetime Stats Section */}
-                        <View className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-4 mb-6 border border-border">
+                        <View className="bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-4 mb-6 borderWidth: 1, borderColor: hexColors.border">
                             <View className="flex-row items-center gap-2 mb-3">
                                 <Ionicons name="trophy" size={18} color={theme.colors.primary} />
-                                <Text className="text-sm font-bold text-foreground uppercase tracking-wider">
+                                <Text className="text-sm font-bold uppercase tracking-wider">
                                     All-Time Statistics
                                 </Text>
                             </View>
@@ -349,19 +355,19 @@ export default function DeadlineTracker() {
                                     <Text className="text-2xl font-bold text-emerald-500">
                                         {lifetimeStats.totalTasksCompleted}
                                     </Text>
-                                    <Text className="text-xs text-muted-foreground mt-1">Completed</Text>
+                                    <Text className="text-xs  mt-1" style={{ color: hexColors.mutedForeground }}>Completed</Text>
                                 </View>
                                 <View className="flex-1 items-center border-x border-border">
                                     <Text className="text-2xl font-bold text-red-500">
                                         {lifetimeStats.totalTasksMissed}
                                     </Text>
-                                    <Text className="text-xs text-muted-foreground mt-1">Missed</Text>
+                                    <Text className="text-xs  mt-1" style={{ color: hexColors.mutedForeground }}>Missed</Text>
                                 </View>
                                 <View className="flex-1 items-center">
-                                    <Text className="text-2xl font-bold text-primary">
+                                    <Text className="text-2xl font-bold " style={{ color: hexColors.primary }}>
                                         {lifetimeStats.totalTasksEver}
                                     </Text>
-                                    <Text className="text-xs text-muted-foreground mt-1">Total Ever</Text>
+                                    <Text className="text-xs  mt-1" style={{ color: hexColors.mutedForeground }}>Total Ever</Text>
                                 </View>
                             </View>
                         </View>
@@ -386,7 +392,7 @@ export default function DeadlineTracker() {
                                     <View className="mb-6">
                                         <View className="flex-row items-center gap-2 mb-3 px-1">
                                             <Ionicons name="calendar" size={20} color={theme.colors.foreground} />
-                                            <Text className="text-lg font-bold text-foreground">Upcoming Deadlines</Text>
+                                            <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>Upcoming Deadlines</Text>
                                         </View>
                                         {upcomingAssignments.map((item, index) => renderAssignmentCard(item, index))}
                                     </View>
@@ -396,15 +402,15 @@ export default function DeadlineTracker() {
                                 {completedAssignments.length > 0 && (
                                     <TouchableOpacity 
                                         onPress={() => setModalVisible(true)}
-                                        className="bg-card p-4 rounded-2xl border border-border shadow-sm flex-row items-center justify-between mt-2"
+                                        className="p-4 rounded-2xl borderWidth: 1, borderColor: hexColors.border shadow-sm flex-row items-center justify-between mt-2" style={{ backgroundColor: hexColors.card }}
                                     >
                                         <View className="flex-row items-center gap-3">
                                             <View className="w-10 h-10 rounded-xl bg-emerald-500/10 items-center justify-center">
                                                 <Ionicons name="checkmark-done" size={20} color="#10B981" />
                                             </View>
                                             <View>
-                                                <Text className="text-base font-bold text-foreground">Completed Assignments</Text>
-                                                <Text className="text-xs text-muted-foreground">{completedAssignments.length} tasks finished</Text>
+                                                <Text className="text-base font-bold " style={{ color: hexColors.foreground }}>Completed Assignments</Text>
+                                                <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>{completedAssignments.length} tasks finished</Text>
                                             </View>
                                         </View>
                                         <Ionicons name="chevron-forward" size={20} color={theme.colors.mutedForeground} />
@@ -423,10 +429,10 @@ export default function DeadlineTracker() {
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
             >
-                <View className="flex-1 bg-background">
+                <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
                     {/* Modal Header */}
-                    <View className="px-4 py-4 border-b border-border/50 flex-row items-center justify-between bg-card">
-                        <Text className="text-lg font-bold text-foreground">Completed Tasks</Text>
+                    <View className="px-4 py-4 border-b border-border/50 flex-row items-center justify-between " style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}>
+                        <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>Completed Tasks</Text>
                         <TouchableOpacity 
                             onPress={() => setModalVisible(false)} 
                             className="w-8 h-8 rounded-full bg-secondary items-center justify-center"
@@ -440,7 +446,7 @@ export default function DeadlineTracker() {
                             <View key={courseName} className="mb-6">
                                 <View className="flex-row items-center gap-2 mb-3 px-1">
                                     <View className="w-1 h-4 bg-emerald-500 rounded-full" />
-                                    <Text className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
+                                    <Text className="text-sm font-bold  uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>
                                         {courseName}
                                     </Text>
                                 </View>

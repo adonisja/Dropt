@@ -21,7 +21,7 @@ interface CourseWithGrade {
 
 export default function CourseArchive() {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const [groupedCourses, setGroupedCourses] = useState<Record<number, Record<string, CourseWithGrade[]>>>({});
     const [uncategorizedCourses, setUncategorizedCourses] = useState<CourseWithGrade[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -116,10 +116,10 @@ export default function CourseArchive() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 bg-background">
+            <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
                 <View className="flex-1 justify-center items-center p-6">
                     <ActivityIndicator size="large" color={theme.colors.primary} />
-                    <Text className="mt-4 text-base font-medium text-muted-foreground">
+                    <Text className="mt-4 text-base font-medium " style={{ color: hexColors.mutedForeground }}>
                         Loading course archive...
                     </Text>
                 </View>
@@ -129,18 +129,18 @@ export default function CourseArchive() {
 
     if (error) {
         return (
-            <View className="flex-1 bg-background">
+            <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
                 <View className="flex-1 justify-center items-center p-8">
                     <View className="w-16 h-16 bg-destructive/10 rounded-full items-center justify-center mb-4">
                         <Ionicons name="alert-circle" size={32} color={theme.colors.destructive} />
                     </View>
-                    <Text className="text-lg font-semibold text-foreground mb-2">Something went wrong</Text>
-                    <Text className="text-sm text-center mb-6 text-muted-foreground">{error}</Text>
+                    <Text className="text-lg font-semibold mb-2">Something went wrong</Text>
+                    <Text className="text-sm text-center mb-6 " style={{ color: hexColors.mutedForeground }}>{error}</Text>
                     <TouchableOpacity
                         className="py-3 px-8 rounded-full bg-primary"
                         onPress={loadArchiveData}
                     >
-                        <Text className="text-base font-semibold text-primary-foreground">
+                        <Text className="text-base font-semibold  -foreground" style={{ color: hexColors.primary }}>
                             Try Again
                         </Text>
                     </TouchableOpacity>
@@ -159,13 +159,13 @@ export default function CourseArchive() {
     }
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <Stack.Screen options={{ title: 'Course Archive' }} />
             <SafeAreaView className="flex-1">
                 {/* Header */}
                 <View className="px-6 pt-4 pb-2 items-center">
-                    <Text className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Historical</Text>
-                    <Text className="text-3xl font-bold text-foreground">Course Archive</Text>
+                    <Text className="text-sm font-medium  uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>Historical</Text>
+                    <Text className="text-3xl font-bold " style={{ color: hexColors.foreground }}>Course Archive</Text>
                 </View>
 
                 <ScrollView
@@ -178,10 +178,10 @@ export default function CourseArchive() {
                             <View className="w-20 h-20 bg-muted/30 rounded-full items-center justify-center mb-6">
                                 <Ionicons name="archive-outline" size={40} color={theme.colors.mutedForeground} />
                             </View>
-                            <Text className="text-xl font-bold mb-2 text-foreground">
+                            <Text className="text-xl font-bold mb-2 " style={{ color: hexColors.foreground }}>
                                 No Archived Courses
                             </Text>
-                            <Text className="text-base text-center text-muted-foreground px-8">
+                            <Text className="text-base text-center  px-8" style={{ color: hexColors.mutedForeground }}>
                                 Your course history will appear here as you complete semesters.
                             </Text>
                         </View>
@@ -201,7 +201,7 @@ export default function CourseArchive() {
                                     {/* Year Header */}
                                     <View className="flex-row items-center mb-4">
                                         <View className="flex-1 h-px bg-border" />
-                                        <Text className="text-2xl font-black text-foreground px-4">{year}</Text>
+                                        <Text className="text-2xl font-black px-4">{year}</Text>
                                         <View className="flex-1 h-px bg-border" />
                                     </View>
 
@@ -219,10 +219,10 @@ export default function CourseArchive() {
                                                         color={theme.colors.primary} 
                                                         style={{ marginRight: 8 }}
                                                     />
-                                                    <Text className="text-lg font-bold text-primary">
+                                                    <Text className="text-lg font-bold " style={{ color: hexColors.primary }}>
                                                         {semester}
                                                     </Text>
-                                                    <Text className="text-sm text-muted-foreground ml-2">
+                                                    <Text className="text-sm  ml-2" style={{ color: hexColors.mutedForeground }}>
                                                         ({courses.length} {courses.length === 1 ? 'course' : 'courses'})
                                                     </Text>
                                                 </View>
@@ -231,7 +231,7 @@ export default function CourseArchive() {
                                                 {courses.map((courseWithGrade) => (
                                                     <TouchableOpacity
                                                         key={`${courseWithGrade.course.studentId}-${courseWithGrade.course.courseId}`}
-                                                        className="rounded-xl p-4 mb-3 bg-card border border-border"
+                                                        className="rounded-xl p-4 mb-3  borderWidth: 1, borderColor: hexColors.border" style={{ backgroundColor: hexColors.card }}
                                                         activeOpacity={0.7}
                                                         onPress={() => router.push({
                                                             pathname: '/(student)/courses/[id]',
@@ -240,13 +240,13 @@ export default function CourseArchive() {
                                                     >
                                                         <View className="flex-row justify-between items-start">
                                                             <View className="flex-1 mr-2">
-                                                                <Text className="text-xs font-bold text-primary uppercase tracking-wide mb-1">
+                                                                <Text className="text-xs font-bold  uppercase tracking-wide mb-1" style={{ color: hexColors.primary }}>
                                                                     {courseWithGrade.course.department || 'COURSE'}
                                                                 </Text>
                                                                 <Text className="text-lg font-bold text-card-foreground">
                                                                     {courseWithGrade.course.courseName}
                                                                 </Text>
-                                                                <Text className="text-sm text-muted-foreground mt-1">
+                                                                <Text className="text-sm  mt-1" style={{ color: hexColors.mutedForeground }}>
                                                                     {courseWithGrade.course.credits || 3} Credits
                                                                 </Text>
                                                             </View>
@@ -264,7 +264,7 @@ export default function CourseArchive() {
                                                                     >
                                                                         {courseWithGrade.letterGrade}
                                                                     </Text>
-                                                                    <Text className="text-xs text-muted-foreground">
+                                                                    <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>
                                                                         {courseWithGrade.currentGrade !== null 
                                                                             ? `${courseWithGrade.currentGrade.toFixed(1)}%` 
                                                                             : 'No grade'}
@@ -291,12 +291,12 @@ export default function CourseArchive() {
                             {/* Section Header */}
                             <View className="flex-row items-center mb-4">
                                 <View className="flex-1 h-px bg-border" />
-                                <Text className="text-2xl font-black text-muted-foreground px-4">Legacy Courses</Text>
+                                <Text className="text-2xl font-black  px-4" style={{ color: hexColors.mutedForeground }}>Legacy Courses</Text>
                                 <View className="flex-1 h-px bg-border" />
                             </View>
 
                             <View className="mb-3 px-2">
-                                <Text className="text-sm text-muted-foreground">
+                                <Text className="text-sm " style={{ color: hexColors.mutedForeground }}>
                                     Courses added before semester tracking was enabled
                                 </Text>
                             </View>
@@ -305,7 +305,7 @@ export default function CourseArchive() {
                             {uncategorizedCourses.map((courseWithGrade) => (
                                 <TouchableOpacity
                                     key={`${courseWithGrade.course.studentId}-${courseWithGrade.course.courseId}`}
-                                    className="rounded-xl p-4 mb-3 bg-card border border-border"
+                                    className="rounded-xl p-4 mb-3  borderWidth: 1, borderColor: hexColors.border" style={{ backgroundColor: hexColors.card }}
                                     activeOpacity={0.7}
                                     onPress={() => router.push({
                                         pathname: '/(student)/courses/[id]',
@@ -314,13 +314,13 @@ export default function CourseArchive() {
                                 >
                                     <View className="flex-row justify-between items-start">
                                         <View className="flex-1 mr-2">
-                                            <Text className="text-xs font-bold text-primary uppercase tracking-wide mb-1">
+                                            <Text className="text-xs font-bold  uppercase tracking-wide mb-1" style={{ color: hexColors.primary }}>
                                                 {courseWithGrade.course.department || 'COURSE'}
                                             </Text>
                                             <Text className="text-lg font-bold text-card-foreground">
                                                 {courseWithGrade.course.courseName}
                                             </Text>
-                                            <Text className="text-sm text-muted-foreground mt-1">
+                                            <Text className="text-sm  mt-1" style={{ color: hexColors.mutedForeground }}>
                                                 {courseWithGrade.course.credits || 3} Credits
                                             </Text>
                                         </View>
@@ -338,7 +338,7 @@ export default function CourseArchive() {
                                                 >
                                                     {courseWithGrade.letterGrade}
                                                 </Text>
-                                                <Text className="text-xs text-muted-foreground">
+                                                <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>
                                                     {courseWithGrade.currentGrade !== null 
                                                         ? `${courseWithGrade.currentGrade.toFixed(1)}%` 
                                                         : 'No grade'}

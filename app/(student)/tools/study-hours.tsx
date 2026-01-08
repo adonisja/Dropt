@@ -21,7 +21,7 @@ interface CourseStudyData {
 
 export default function StudyHoursBreakdown() {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const [courses, setCourses] = useState<CourseStudyData[]>([]);
     const [totalStudyHours, setTotalStudyHours] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
@@ -67,22 +67,22 @@ export default function StudyHoursBreakdown() {
     
     if (isLoading) {
         return (
-            <View className="flex-1 bg-background justify-center items-center">
+            <View className="flex-1  justify-center items-center" style={{ backgroundColor: hexColors.background }}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
         )
     }
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <Stack.Screen options={{ title: 'Study Hours' }} />
             <SafeAreaView className="flex-1">
                 {/* Header */}
                 <View className="px-6 pt-4 pb-2">
-                    <Text className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                    <Text className="text-sm font-medium  uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>
                         Weekly Commitment
                     </Text>
-                    <Text className="text-3xl font-bold text-foreground">
+                    <Text className="text-3xl font-bold " style={{ color: hexColors.foreground }}>
                         {totalStudyHours} Hours
                     </Text>
                 </View>
@@ -91,16 +91,16 @@ export default function StudyHoursBreakdown() {
                     {courses.length === 0 ? (
                         <View className="items-center justify-center py-20">
                             <Ionicons name="time-outline" size={64} color={theme.colors.mutedForeground} />
-                            <Text className="text-lg font-semibold text-foreground mt-4">
+                            <Text className="text-lg font-semibold mt-4">
                                 No Study Hours Tracked
                             </Text>
-                            <Text className="text-sm text-muted-foreground text-center mt-2 px-8">
+                            <Text className="text-sm  text-center mt-2 px-8" style={{ color: hexColors.mutedForeground }}>
                                 Add study hours to your courses to see your weekly breakdown.
                             </Text>
                         </View>
                     ) : (
                         <>
-                            <Text className="text-lg font-bold text-foreground mb-4 mt-6">
+                            <Text className="text-lg font-bold mb-4 mt-6">
                                 Course Breakdown
                             </Text>
 
@@ -110,17 +110,17 @@ export default function StudyHoursBreakdown() {
                                     entering={FadeInDown.delay(index * 100).springify().damping(15)}
                                     className="mb-4"
                                 >
-                                    <View className="bg-card rounded-2xl p-4 border border-border">
+                                    <View className="rounded-2xl p-4 borderWidth: 1, borderColor: hexColors.border">
                                         <View className="flex-row justify-between items-start mb-3">
                                             <View className="flex-1">
-                                                <Text className="text-xs font-bold text-primary uppercase tracking-wide mb-1">
+                                                <Text className="text-xs font-bold  uppercase tracking-wide mb-1" style={{ color: hexColors.primary }}>
                                                     {course.department}
                                                 </Text>
                                                 <Text className="text-lg font-bold text-card-foreground">
                                                     {course.courseName}
                                                 </Text>
                                                 {course.classDays && (
-                                                    <Text className="text-sm text-muted-foreground mt-1">
+                                                    <Text className="text-sm  mt-1" style={{ color: hexColors.mutedForeground }}>
                                                         {course.classDays}
                                                     </Text>
                                                 )}
@@ -141,7 +141,7 @@ export default function StudyHoursBreakdown() {
                                                 }}
                                             />
                                         </View>
-                                        <Text className="text-xs text-muted-foreground mt-2">
+                                        <Text className="text-xs  mt-2" style={{ color: hexColors.mutedForeground }}>
                                             {totalStudyHours > 0 ? ((course.weeklyStudyHours / totalStudyHours) * 100).toFixed(1) : 0}% of weekly study time
                                         </Text>
                                     </View>
@@ -152,11 +152,11 @@ export default function StudyHoursBreakdown() {
                             <View className="bg-primary/5 rounded-2xl p-4 border border-primary/20 mt-4 mb-6">
                                 <View className="flex-row items-center mb-2">
                                     <Ionicons name="information-circle" size={20} color={theme.colors.primary} />
-                                    <Text className="text-sm font-bold text-foreground ml-2">
+                                    <Text className="text-sm font-bold ml-2">
                                         Study Tip
                                     </Text>
                                 </View>
-                                <Text className="text-sm text-muted-foreground leading-5">
+                                <Text className="text-sm  leading-5" style={{ color: hexColors.mutedForeground }}>
                                     Most students study 2-3 hours per week for each credit hour. For a 3-credit course, that's 6-9 hours per week.
                                 </Text>
                             </View>

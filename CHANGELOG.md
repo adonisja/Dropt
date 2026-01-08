@@ -5,6 +5,16 @@ All notable changes to the Dropt project will be documented in this file.
 ## [Unreleased] - 2026-01-07
 
 ### Added
+- **Platform-Agnostic Theme System**:
+  - Created `lib/theme/theme-styles.ts` with HSL to Hex color converter
+  - Added `hexColors` and `themedStyles` to theme context for React Native compatibility
+  - Implemented time-based auto theme mode (6PM-6AM = dark, 6AM-6PM = light)
+  - Added seasonal emoji icons to dashboard (❄️ Winter, 🌸 Spring, ☀️ Summer, 🍂 Fall)
+  
+- **Security Enhancements**:
+  - Added Amplify-generated files to `.gitignore` (API.ts, mutations.ts, queries.ts, subscriptions.ts, schema.ts)
+  - Protected backend schema structure from public exposure
+
 - **Semester-Based Deadline Tracking**:
   - Deadline tracker now operates on current semester only
   - Added `totalTasksCompleted`, `totalTasksMissed`, `totalTasksEver` fields to UserSettings schema
@@ -25,6 +35,24 @@ All notable changes to the Dropt project will be documented in this file.
   - Added testing checklist and future enhancement roadmap
 
 ### Changed
+- **Complete Theme Migration** (23 files):
+  - Migrated all components from NativeWind CSS classes to platform-agnostic `hexColors`
+  - Components: BottomNav, GradeDistributionChart, RecommendationCard, SuccessScreen, HeaderProfileBtn
+  - Student pages: student_dashboard, settings, all courses screens, all tools screens, assignments
+  - Converted arrow function components to regular functions for `useTheme` hook access
+  - Fixed text contrast issues across all theme modes (empty states, form fields, navigation)
+  
+- **Student Dashboard (`app/(student)/student_dashboard.tsx`)**:
+  - Added ScrollView top padding for better header spacing
+  - Implemented seasonal icons using `getSeasonLabel()` from semester-utils
+  - Changed empty state text color for better dark mode contrast
+  - Analytics and Resource Hub now filter by current semester only
+  
+- **Auto Theme Behavior (`lib/theme/theme-context.tsx`)**:
+  - Changed from system-based to time-based detection
+  - Automatically switches to dark mode between 6PM-6AM
+  - Provides consistent theme experience across all platforms
+
 - **Deadline Tracker (`app/(student)/tools/deadline-tracker.tsx`)**:
   - Filters assignments by `currentSemester` and `currentYear` from UserSettings
   - Added state management for lifetime statistics
@@ -37,6 +65,18 @@ All notable changes to the Dropt project will be documented in this file.
   - Dynamically imports semester utilities to avoid circular dependencies
 
 ### Fixed
+- **Theme Migration Syntax Errors**:
+  - Fixed malformed className/style syntax in assessment.tsx, [id].tsx, edit.tsx
+  - Corrected TextInput color properties in email-generator.tsx
+  - Fixed component structure in drop-analysis.tsx (EmptyAnalysis, RiskSummaryCard)
+  - Resolved back button and timer control colors in study-timer.tsx
+  - Fixed contrast issues in resource-hub.tsx navigation elements
+  
+- **NativeWind Compatibility**:
+  - Resolved CSS variable limitation in React Native (bg-background, text-foreground)
+  - Eliminated platform-specific rendering issues with conditional className values
+  - Fixed ternary operator syntax within style attributes
+  
 - **Type Safety**: Added null checks and type assertions for new UserSettings fields
 - **Performance**: Deadline tracker only loads current semester courses (reduced data fetch)
 

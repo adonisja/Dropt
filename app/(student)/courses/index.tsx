@@ -31,7 +31,7 @@ interface CourseGradeData {
 
 export default function StudentDashboard() {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const [courses, setCourses] = useState<CourseGradeData[]>([]);
     const [hasAnyHistoricalCourses, setHasAnyHistoricalCourses] = useState(false);
     const [currentSemester, setCurrentSemester] = useState<string>('');
@@ -176,10 +176,10 @@ export default function StudentDashboard() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 bg-background">
+            <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
                 <View className="flex-1 justify-center items-center p-6">
                     <ActivityIndicator size="large" color={theme.colors.primary} />
-                    <Text className="mt-4 text-base font-medium text-muted-foreground animate-pulse">
+                    <Text className="mt-4 text-base font-medium  animate-pulse" style={{ color: hexColors.mutedForeground }}>
                         Loading your academic profile...
                     </Text>
                 </View>
@@ -189,18 +189,18 @@ export default function StudentDashboard() {
 
     if (error) {
         return (
-            <View className="flex-1 bg-background">
+            <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
                 <View className="flex-1 justify-center items-center p-8">
                     <View className="w-16 h-16 bg-destructive/10 rounded-full items-center justify-center mb-4">
                         <Ionicons name="alert-circle" size={32} color={theme.colors.destructive} />
                     </View>
-                    <Text className="text-lg font-semibold text-foreground mb-2">Something went wrong</Text>
-                    <Text className="text-sm text-center mb-6 text-muted-foreground leading-5">{error}</Text>
+                    <Text className="text-lg font-semibold mb-2">Something went wrong</Text>
+                    <Text className="text-sm text-center mb-6  leading-5" style={{ color: hexColors.mutedForeground }}>{error}</Text>
                     <TouchableOpacity
                         className="py-3 px-8 rounded-full bg-primary shadow-lg shadow-primary/30"
                         onPress={loadCourseData}
                     >
-                        <Text className="text-base font-semibold text-primary-foreground">
+                        <Text className="text-base font-semibold  -foreground" style={{ color: hexColors.primary }}>
                             Try Again
                         </Text>
                     </TouchableOpacity>
@@ -210,12 +210,12 @@ export default function StudentDashboard() {
     }
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <SafeAreaView className="flex-1">
                 <View className="px-6 pt-4 pb-2 flex-row justify-between items-center">
                     <View>
-                        <Text className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{currentSemester} {currentYear}</Text>
-                        <Text className="text-3xl font-bold text-foreground">My Courses</Text>
+                        <Text className="text-sm font-medium  uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>{currentSemester} {currentYear}</Text>
+                        <Text className="text-3xl font-bold " style={{ color: hexColors.foreground }}>My Courses</Text>
                     </View>
                     <TouchableOpacity 
                         className="w-10 h-10 rounded-full bg-secondary items-center justify-center"
@@ -242,10 +242,10 @@ export default function StudentDashboard() {
                             <View className="w-20 h-20 bg-primary/10 rounded-full items-center justify-center mb-6">
                                 <Ionicons name="school-outline" size={40} color={theme.colors.primary} />
                             </View>
-                            <Text className="text-2xl font-bold mb-2 text-foreground">
+                            <Text className="text-2xl font-bold mb-2 " style={{ color: hexColors.foreground }}>
                                 Welcome to Dropt!
                             </Text>
-                            <Text className="text-base text-center mb-8 text-muted-foreground px-8">
+                            <Text className="text-base text-center mb-8  px-8" style={{ color: hexColors.mutedForeground }}>
                                 Start tracking your academic journey by adding your first course.
                             </Text>
                             <TouchableOpacity
@@ -253,7 +253,7 @@ export default function StudentDashboard() {
                                 onPress={() => router.push('/(student)/courses/add')}
                             >
                                 <Ionicons name="add" size={24} color="white" style={{ marginRight: 8 }} />
-                                <Text className="text-lg font-semibold text-primary-foreground">
+                                <Text className="text-lg font-semibold  -foreground" style={{ color: hexColors.primary }}>
                                     Add Course
                                 </Text>
                             </TouchableOpacity>
@@ -265,7 +265,7 @@ export default function StudentDashboard() {
                                 entering={FadeInDown.delay(index * 100).springify().damping(15)}
                             >
                                 <TouchableOpacity
-                                    className="rounded-2xl p-5 mb-4 bg-card border border-border shadow-sm"
+                                    className="rounded-2xl p-5 mb-4  borderWidth: 1, borderColor: hexColors.border shadow-sm" style={{ backgroundColor: hexColors.card }}
                                     activeOpacity={0.9}
                                     onPress={() => router.push({
                                         pathname: '/(student)/courses/[id]',
@@ -274,7 +274,7 @@ export default function StudentDashboard() {
                                 >
                                     <View className="flex-row justify-between items-start mb-3">
                                         <View className="flex-1 mr-2">
-                                            <Text className="text-xs font-bold text-primary uppercase tracking-wide mb-1">
+                                            <Text className="text-xs font-bold  uppercase tracking-wide mb-1" style={{ color: hexColors.primary }}>
                                                 {courseData.course.department || 'COURSE'}
                                             </Text>
                                             <Text className="text-xl font-bold text-card-foreground leading-tight">
@@ -291,7 +291,7 @@ export default function StudentDashboard() {
                                     {!courseData.hasAssignments ? (
                                         <View className="py-4 flex-row items-center justify-center bg-muted/30 rounded-xl border border-dashed border-muted-foreground/20">
                                             <Ionicons name="document-text-outline" size={16} color={theme.colors.mutedForeground} style={{ marginRight: 8 }} />
-                                            <Text className="text-sm text-muted-foreground font-medium">
+                                            <Text className="text-sm  font-medium" style={{ color: hexColors.mutedForeground }}>
                                                 No assignments yet
                                             </Text>
                                         </View>
@@ -299,7 +299,7 @@ export default function StudentDashboard() {
                                         <View className="mt-1">
                                             <View className="flex-row items-end justify-between mb-2">
                                                 <View>
-                                                    <Text className="text-xs text-muted-foreground font-medium mb-0.5">Current Grade</Text>
+                                                    <Text className="text-xs  font-medium mb-0.5" style={{ color: hexColors.mutedForeground }}>Current Grade</Text>
                                                     <Text className="text-3xl font-bold" style={{ color: getGradeColor(courseData.currentGrade) }}>
                                                         {courseData.currentGrade !== null ? `${courseData.currentGrade.toFixed(1)}%` : '--'}
                                                     </Text>
@@ -308,7 +308,7 @@ export default function StudentDashboard() {
                                                     <Text className="text-4xl font-black text-muted/20 absolute -bottom-1 -right-1">
                                                         {getLetterGrade(courseData.currentGrade)}
                                                     </Text>
-                                                    <Text className="text-2xl font-bold text-foreground/80 z-10">
+                                                    <Text className="text-2xl font-bold  /80 z-10" style={{ color: hexColors.foreground }}>
                                                         {getLetterGrade(courseData.currentGrade)}
                                                     </Text>
                                                 </View>
@@ -328,14 +328,14 @@ export default function StudentDashboard() {
                                             <View className="flex-row justify-between pt-2 border-t border-border/50">
                                                 <View className="flex-row items-center">
                                                     <Ionicons name="trending-up" size={14} color="#10B981" style={{ marginRight: 4 }} />
-                                                    <Text className="text-xs text-muted-foreground">
-                                                        Best: <Text className="font-bold text-foreground">{courseData.bestCase !== null ? `${courseData.bestCase.toFixed(1)}%` : '--'}</Text>
+                                                    <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>
+                                                        Best: <Text className="font-bold " style={{ color: hexColors.foreground }}>{courseData.bestCase !== null ? `${courseData.bestCase.toFixed(1)}%` : '--'}</Text>
                                                     </Text>
                                                 </View>
                                                 <View className="flex-row items-center">
                                                     <Ionicons name="trending-down" size={14} color="#EF4444" style={{ marginRight: 4 }} />
-                                                    <Text className="text-xs text-muted-foreground">
-                                                        Worst: <Text className="font-bold text-foreground">{courseData.worstCase !== null ? `${courseData.worstCase.toFixed(1)}%` : '--'}</Text>
+                                                    <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>
+                                                        Worst: <Text className="font-bold " style={{ color: hexColors.foreground }}>{courseData.worstCase !== null ? `${courseData.worstCase.toFixed(1)}%` : '--'}</Text>
                                                     </Text>
                                                 </View>
                                             </View>
@@ -381,13 +381,13 @@ export default function StudentDashboard() {
 
                 {/* Archive Button - Fixed at bottom of screen */}
                 {hasAnyHistoricalCourses && (
-                    <View className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-2 bg-background border-t border-border">
+                    <View className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-2  border-t border-border" style={{ backgroundColor: hexColors.background }}>
                         <TouchableOpacity
-                            className="py-4 px-6 rounded-2xl bg-card border border-border items-center flex-row justify-center"
+                            className="py-4 px-6 rounded-2xl  borderWidth: 1, borderColor: hexColors.border items-center flex-row justify-center" style={{ backgroundColor: hexColors.card }}
                             onPress={() => router.push('/(student)/courses/archive')}
                         >
                             <Ionicons name='archive-outline' size={20} color={theme.colors.foreground} style={{marginRight: 8}} />
-                            <Text className="text-base font-semibold text-foreground">View Course Archive</Text>
+                            <Text className="text-base font-semibold " style={{ color: hexColors.foreground }}>View Course Archive</Text>
                             <Ionicons name='chevron-forward' size={20} color={theme.colors.mutedForeground} style={{ marginLeft: 4 }} />
                         </TouchableOpacity>
                     </View>

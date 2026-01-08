@@ -4,6 +4,11 @@ node_modules
 amplify_outputs*
 amplifyconfiguration*
 ampx-*
+API.ts
+mutations.ts
+queries.ts
+subscriptions.ts
+schema.ts
 
 # AI/Claude artifacts (contains conversation history)
 .claude/

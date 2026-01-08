@@ -78,7 +78,7 @@ const QUESTIONS = [
 
 export default function CourseAssessmentPage() {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const router = useRouter();
     const params = useLocalSearchParams<{ courseId: string }>();
     const courseId = typeof params.courseId === 'string' ? params.courseId : params.courseId?.[0];
@@ -307,7 +307,7 @@ export default function CourseAssessmentPage() {
         return (
             <View key={q.id} className="mb-6">
                 <View className="flex-row items-center mb-3">
-                    <Text className="text-base font-medium text-foreground flex-1">{q.question}</Text>
+                    <Text className="text-base font-medium flex-1">{q.question}</Text>
                     {isSharedQuestion && hasAnswer && (
                         <View className="ml-2 px-2 py-0.5 bg-blue-500/10 rounded-md">
                             <Text className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Shared</Text>
@@ -319,19 +319,29 @@ export default function CourseAssessmentPage() {
                         <TouchableOpacity
                             key={opt.label}
                             onPress={() => handleAnswer(q.id, opt.score)}
-                            className={`p-4 rounded-xl border flex-row items-center justify-between ${
-                                answers[q.id] === opt.score
-                                    ? 'bg-primary/10 border-primary'
-                                    : 'bg-card border-border'
-                            }`}
+                            className="p-4 rounded-xl flex-row items-center justify-between"
+                            style={{
+                                backgroundColor: answers[q.id] === opt.score 
+                                    ? `${hexColors.primary}10` 
+                                    : hexColors.card,
+                                borderWidth: 1,
+                                borderColor: answers[q.id] === opt.score 
+                                    ? hexColors.primary 
+                                    : hexColors.border
+                            }}
                         >
-                            <Text className={`font-medium ${
-                                answers[q.id] === opt.score ? 'text-primary' : 'text-foreground'
-                            }`}>
+                            <Text 
+                                className="font-medium"
+                                style={{ 
+                                    color: answers[q.id] === opt.score 
+                                        ? hexColors.primary 
+                                        : hexColors.foreground 
+                                }}
+                            >
                                 {opt.label}
                             </Text>
                             {answers[q.id] === opt.score && (
-                                <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />
+                                <Ionicons name="checkmark-circle" size={20} color={hexColors.primary} />
                             )}
                         </TouchableOpacity>
                     ))}
@@ -342,14 +352,14 @@ export default function CourseAssessmentPage() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 bg-background justify-center items-center">
-                <Text className="text-foreground">Loading...</Text>
+            <View className="flex-1  justify-center items-center" style={{ backgroundColor: hexColors.background }}>
+                <Text className="text" style={{ color: hexColors.foreground }}>Loading...</Text>
             </View>
         );
     }
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             {/* Header */}
             <View className="px-4 py-3 border-b border-border flex-row items-center justify-between safe-top">
                 <TouchableOpacity 
@@ -359,8 +369,8 @@ export default function CourseAssessmentPage() {
                     <Ionicons name="arrow-back" size={24} color={theme.colors.foreground} />
                 </TouchableOpacity>
                 <View className="items-center">
-                    <Text className="text-lg font-bold text-foreground">Assessment</Text>
-                    <Text className="text-xs text-muted-foreground">Step {step} of {TOTAL_STEPS}</Text>
+                    <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>Assessment</Text>
+                    <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>Step {step} of {TOTAL_STEPS}</Text>
                 </View>
                 <View className="w-10" />
             </View>
@@ -374,15 +384,13 @@ export default function CourseAssessmentPage() {
             </View>
 
             <ScrollView className="flex-1 px-4 pt-6">
-                <Text className="text-2xl font-bold text-foreground mb-2">
+                <Text className="text-2xl font-bold mb-2">
                     {step === 1 ? "Workload & Context" : 
-                     step === 2 ? "Wellbeing Check" : 
-                     "Course Feelings"}
+                     step === 2 ? "Wellbeing Check" : "Course Feelings"}
                 </Text>
-                <Text className="text-muted-foreground mb-6">
+                <Text className="mb-6" style={{ color: hexColors.mutedForeground }}>
                     {step === 1 ? "Let's start with the numbers." : 
-                     step === 2 ? "How is this affecting you physically and mentally?" : 
-                     "Your personal connection to the material."}
+                     step === 2 ? "How is this affecting you physically and mentally?" : "Your personal connection to the material."}
                 </Text>
 
                 {error && (
@@ -399,9 +407,9 @@ export default function CourseAssessmentPage() {
                     {step === 1 && (
                         <View className="gap-4">
                             <View>
-                                <Text className="text-sm font-medium mb-2 text-foreground">Hours per week spent on this course</Text>
+                                <Text className="text-sm font-medium mb-2 " style={{ color: hexColors.foreground }}>Hours per week spent on this course</Text>
                                 <TextInput
-                                    className="border border-input rounded-xl p-4 text-base text-foreground bg-card"
+                                    className="border border-input rounded-xl p-4 text-base " style={{ backgroundColor: hexColors.card }}
                                     value={weeklyHours}
                                     onChangeText={setWeeklyHours}
                                     keyboardType="numeric"
@@ -422,7 +430,7 @@ export default function CourseAssessmentPage() {
 
                             <View>
                                 <View className="flex-row items-center mb-2">
-                                    <Text className="text-sm font-medium text-foreground">Total credit hours this semester</Text>
+                                    <Text className="text-sm font-medium " style={{ color: hexColors.foreground }}>Total credit hours this semester</Text>
                                     {totalCredits && (
                                         <View className="ml-2 px-2 py-0.5 bg-blue-500/10 rounded-md">
                                             <Text className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Shared</Text>
@@ -430,7 +438,7 @@ export default function CourseAssessmentPage() {
                                     )}
                                 </View>
                                 <TextInput
-                                    className="border border-input rounded-xl p-4 text-base text-foreground bg-card"
+                                    className="border border-input rounded-xl p-4 text-base " style={{ backgroundColor: hexColors.card }}
                                     value={totalCredits}
                                     onChangeText={setTotalCredits}
                                     keyboardType="numeric"
@@ -440,7 +448,7 @@ export default function CourseAssessmentPage() {
                             </View>
                             <View>
                                 <View className="flex-row items-center mb-2">
-                                    <Text className="text-sm font-medium text-foreground">Number of other courses</Text>
+                                    <Text className="text-sm font-medium " style={{ color: hexColors.foreground }}>Number of other courses</Text>
                                     {otherCoursesCount && (
                                         <View className="ml-2 px-2 py-0.5 bg-blue-500/10 rounded-md">
                                             <Text className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Shared</Text>
@@ -448,7 +456,7 @@ export default function CourseAssessmentPage() {
                                     )}
                                 </View>
                                 <TextInput
-                                    className="border border-input rounded-xl p-4 text-base text-foreground bg-card"
+                                    className="border border-input rounded-xl p-4 text-base " style={{ backgroundColor: hexColors.card }}
                                     value={otherCoursesCount}
                                     onChangeText={setOtherCoursesCount}
                                     keyboardType="numeric"
@@ -458,7 +466,7 @@ export default function CourseAssessmentPage() {
                             </View>
                             <View>
                                 <View className="flex-row items-center mb-2">
-                                    <Text className="text-sm font-medium text-foreground">Current GPA (Optional)</Text>
+                                    <Text className="text-sm font-medium " style={{ color: hexColors.foreground }}>Current GPA (Optional)</Text>
                                     {currentGPA && (
                                         <View className="ml-2 px-2 py-0.5 bg-blue-500/10 rounded-md">
                                             <Text className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Shared</Text>
@@ -466,7 +474,7 @@ export default function CourseAssessmentPage() {
                                     )}
                                 </View>
                                 <TextInput
-                                    className="border border-input rounded-xl p-4 text-base text-foreground bg-card"
+                                    className="border border-input rounded-xl p-4 text-base " style={{ backgroundColor: hexColors.card }}
                                     value={currentGPA}
                                     onChangeText={setCurrentGPA}
                                     keyboardType="numeric"
@@ -502,7 +510,7 @@ export default function CourseAssessmentPage() {
                 <View className="h-24" />
             </ScrollView>
 
-            <View className="p-4 border-t border-border bg-background">
+            <View className="p-4 border-t border-border " style={{ backgroundColor: hexColors.background }}>
                 <TouchableOpacity
                     onPress={step === TOTAL_STEPS ? handleSave : handleNext}
                     disabled={isSaving}
@@ -510,7 +518,7 @@ export default function CourseAssessmentPage() {
                         isSaving ? 'bg-muted' : 'bg-primary'
                     }`}
                 >
-                    <Text className="text-primary-foreground font-bold text-lg">
+                    <Text className="-foreground font-bold text-lg" style={{ color: hexColors.primary }}>
                         {isSaving ? 'Saving...' : step === TOTAL_STEPS ? 'Complete Assessment' : 'Next Step'}
                     </Text>
                 </TouchableOpacity>

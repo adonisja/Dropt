@@ -8,7 +8,7 @@ import BottomNav from "@/components/BottomNav";
 
 export default function StudentLayout() {
     const { isAuthenticated, isLoading } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors } = useTheme();
 
     if (isLoading) {
         return (

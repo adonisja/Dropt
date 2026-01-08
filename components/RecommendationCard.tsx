@@ -11,7 +11,7 @@ interface RecommendationCardProps {
 }
 
 export default function RecommendationCard({ result, aiAdvice }: RecommendationCardProps) {
-    const { theme } = useTheme();
+    const { theme, hexColors } = useTheme();
     const { score, riskLevel, advice } = result;
 
     const getColor = (s: number) => {
@@ -30,7 +30,8 @@ export default function RecommendationCard({ result, aiAdvice }: RecommendationC
     return (
         <Animated.View 
             entering={FadeInDown.delay(200).springify()}
-            className="bg-card rounded-2xl p-6 mb-6 border border-border shadow-sm overflow-hidden"
+            className="rounded-2xl p-6 mb-6 shadow-sm overflow-hidden"
+            style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}
         >
             {/* Header */}
             <View className="flex-row justify-between items-start mb-6">

@@ -50,42 +50,48 @@ const getRiskIcon = (risk: string): keyof typeof Ionicons.glyphMap => {
     }
 };
 
-const RiskSummaryCard = ({ title, count, icon, color, bgColor }: { title: string, count: number, icon: keyof typeof Ionicons.glyphMap, color: string, bgColor: string }) => (
-    <View className="bg-card p-4 rounded-2xl border border-border shadow-sm flex-1 mx-1.5 mb-3">
-        <View className="flex-row items-center gap-3">
-            <View className={`w-10 h-10 rounded-xl items-center justify-center ${bgColor}`}>
-                <Ionicons name={icon} size={20} color={color} />
-            </View>
-            <View>
-                <Text className="text-2xl font-bold text-foreground">{count}</Text>
-                <Text className="text-xs text-muted-foreground font-medium">{title}</Text>
+const RiskSummaryCard = ({ title, count, icon, color, bgColor }: { title: string, count: number, icon: keyof typeof Ionicons.glyphMap, color: string, bgColor: string }) => {
+    const { hexColors } = useTheme();
+    return (
+        <View className="p-4 rounded-2xl shadow-sm flex-1 mx-1.5 mb-3" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}>
+            <View className="flex-row items-center gap-3">
+                <View className={`w-10 h-10 rounded-xl items-center justify-center ${bgColor}`}>
+                    <Ionicons name={icon} size={20} color={color} />
+                </View>
+                <View>
+                    <Text className="text-2xl font-bold " style={{ color: hexColors.foreground }}>{count}</Text>
+                    <Text className="text-xs  font-medium" style={{ color: hexColors.mutedForeground }}>{title}</Text>
+                </View>
             </View>
         </View>
-    </View>
-);
+    );
+};
 
-const EmptyAnalysis = () => (
-    <View className="items-center justify-center py-20 px-4 bg-card rounded-3xl border border-dashed border-border">
-        <LinearGradient
-            colors={['#0D9488', '#0EA5E9']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="w-20 h-20 rounded-3xl items-center justify-center mb-6 shadow-sm"
-        >
-            <Ionicons name="book-outline" size={40} color="white" />
-        </LinearGradient>
-        <Text className="text-xl font-bold text-foreground mb-2">No Courses Found</Text>
-        <Text className="text-sm text-muted-foreground text-center max-w-[250px]">
-            Add courses to your profile to start analyzing your academic performance and get personalized recommendations.
-        </Text>
-    </View>
-);
+const EmptyAnalysis = () => {
+    const { hexColors } = useTheme();
+    return (
+        <View className="items-center justify-center py-20 px-4  rounded-3xl border border-dashed" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}>
+            <LinearGradient
+                colors={['#0D9488', '#0EA5E9']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="w-20 h-20 rounded-3xl items-center justify-center mb-6 shadow-sm"
+            >
+                <Ionicons name="book-outline" size={40} color="white" />
+            </LinearGradient>
+            <Text className="text-xl font-bold mb-2">No Courses Found</Text>
+            <Text className="text-sm  text-center max-w-[250px]" style={{ color: hexColors.mutedForeground }}>
+                Add courses to your profile to start analyzing your academic performance and get personalized recommendations.
+            </Text>
+        </View>
+    );
+};
 
 const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: number }) => {
     const riskColor = getRiskColor(item.recommendation.riskLevel);
     const riskBg = getRiskBg(item.recommendation.riskLevel);
     const riskIcon = getRiskIcon(item.recommendation.riskLevel);
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     
     const [aiAdvice, setAiAdvice] = useState<string | null>(null);
     const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -137,7 +143,7 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
             entering={FadeInDown.delay(index * 100).springify()}
             className="mb-4"
         >
-            <View className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden flex-row">
+            <View className="rounded-2xl shadow-sm overflow-hidden flex-row" style={{ borderWidth: 1, borderColor: hexColors.border }}>
                 {/* Left Indicator Bar */}
                 <View style={{ backgroundColor: riskColor }} className="w-1.5 h-full" />
 
@@ -153,10 +159,10 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
                         {/* Header */}
                         <View className="flex-row justify-between items-start mb-3">
                             <View className="flex-1 mr-3">
-                                <Text className="text-base font-bold text-foreground" numberOfLines={1}>
+                                <Text className="text-base font-bold " style={{ color: hexColors.foreground }} numberOfLines={1}>
                                     {item.courseName}
                                 </Text>
-                                <Text className="text-xs text-muted-foreground font-medium mt-0.5">
+                                <Text className="text-xs  font-medium mt-0.5" style={{ color: hexColors.mutedForeground }}>
                                     {item.courseId}
                                 </Text>
                             </View>
@@ -179,7 +185,7 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
                             {/* Grade */}
                             <View className="flex-row items-center gap-1.5">
                                 <Ionicons name="school-outline" size={14} color="#6B7280" />
-                                <Text className="text-sm text-muted-foreground">
+                                <Text className="text-sm " style={{ color: hexColors.mutedForeground }}>
                                     {item.currentGrade !== null ? `${item.currentGrade.toFixed(1)}%` : 'N/A'}
                                 </Text>
                             </View>
@@ -187,7 +193,7 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
                             {/* Stress */}
                             <View className="flex-row items-center gap-1.5">
                                 <Ionicons name="pulse-outline" size={14} color="#6B7280" />
-                                <Text className="text-sm text-muted-foreground">
+                                <Text className="text-sm " style={{ color: hexColors.mutedForeground }}>
                                     Stress: {item.input.stressLevel}/10
                                 </Text>
                             </View>
@@ -195,14 +201,14 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
                             {/* Workload */}
                             <View className="flex-row items-center gap-1.5">
                                 <Ionicons name="time-outline" size={14} color="#6B7280" />
-                                <Text className="text-sm text-muted-foreground">
+                                <Text className="text-sm " style={{ color: hexColors.mutedForeground }}>
                                     {item.input.weeklyHours}h/wk
                                 </Text>
                             </View>
                             
                             {/* Score (Inline) */}
                             <View className="flex-row items-center gap-1.5 ml-auto">
-                                <Text className="text-xs text-muted-foreground font-medium uppercase">Score</Text>
+                                <Text className="text-xs  font-medium uppercase" style={{ color: hexColors.mutedForeground }}>Score</Text>
                                 <Text style={{ color: riskColor }} className="text-sm font-black">
                                     {item.recommendation.score.toFixed(0)}
                                 </Text>
@@ -215,7 +221,7 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
                         <View className="pt-3 border-t border-border/50 flex-col gap-2">
                              <View className="flex-row items-start gap-2">
                                  <Ionicons name="bulb-outline" size={14} color={riskColor} style={{marginTop: 2}} />
-                                 <Text className="text-xs text-muted-foreground flex-1 leading-relaxed">
+                                 <Text className="text-xs  flex-1 leading-relaxed" style={{ color: hexColors.mutedForeground }}>
                                     {item.recommendation.advice[0]}
                                 </Text>
                              </View>
@@ -223,11 +229,11 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
                              {/* AI Advice Section */}
                              {aiAdvice && isExpanded ? (
                                  <View className="mt-2">
-                                     <View className="bg-muted/30 p-3 rounded-xl border border-border/50">
+                                     <View className="bg-muted/30 p-3 rounded-xl" style={{ borderWidth: 1, borderColor: `${hexColors.border}50` }}>
                                          <View className="flex-row items-center justify-between mb-2">
                                              <View className="flex-row items-center gap-2">
                                                  <Ionicons name="sparkles" size={14} color="#8B5CF6" />
-                                                 <Text className="text-xs font-bold text-foreground">AI Strategic Plan</Text>
+                                                 <Text className="text-xs font-bold " style={{ color: hexColors.foreground }}>AI Strategic Plan</Text>
                                              </View>
                                              <TouchableOpacity onPress={() => setIsExpanded(false)} hitSlop={8}>
                                                 <Ionicons name="chevron-up" size={16} color={theme.colors.mutedForeground} />
@@ -239,7 +245,7 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
                                             onPress={() => setIsExpanded(false)}
                                             className="mt-3 flex-row items-center justify-center gap-1 py-2"
                                          >
-                                            <Text className="text-xs font-medium text-muted-foreground">Collapse Strategy</Text>
+                                            <Text className="text-xs font-medium " style={{ color: hexColors.mutedForeground }}>Collapse Strategy</Text>
                                             <Ionicons name="chevron-up" size={12} color={theme.colors.mutedForeground} />
                                          </TouchableOpacity>
                                      </View>
@@ -279,17 +285,18 @@ const CourseAnalysisCard = ({ item, index }: { item: CourseAnalysis, index: numb
 };
 
 const FormattedAIAdvice = ({ advice, riskColor }: { advice: string, riskColor: string }) => {
+    const { hexColors } = useTheme();
     // Split into sections based on ### headers
     const sections = advice.split('###').filter(s => s.trim().length > 0);
 
     const renderTextWithBold = (text: string) => {
         const parts = text.split(/(\*\*.*?\*\*)/g);
         return (
-            <Text className="text-xs text-muted-foreground leading-relaxed">
+            <Text className="text-xs  leading-relaxed" style={{ color: hexColors.mutedForeground }}>
                 {parts.map((part, i) => {
                     if (part.startsWith('**') && part.endsWith('**')) {
                         return (
-                            <Text key={i} className="font-bold text-foreground">
+                            <Text key={i} className="font-bold " style={{ color: hexColors.foreground }}>
                                 {part.slice(2, -2)}
                             </Text>
                         );
@@ -308,8 +315,8 @@ const FormattedAIAdvice = ({ advice, riskColor }: { advice: string, riskColor: s
                 const content = lines.slice(1);
 
                 return (
-                    <View key={index} className="bg-muted/30 rounded-xl p-3 border border-border/50">
-                        <Text className="text-xs font-bold text-primary mb-2 uppercase tracking-wider">
+                    <View key={index} className="bg-muted/30 rounded-xl p-3" style={{ borderWidth: 1, borderColor: `${hexColors.border}50` }}>
+                        <Text className="text-xs font-bold  mb-2 uppercase tracking-wider" style={{ color: hexColors.primary }}>
                             {title}
                         </Text>
                         
@@ -348,7 +355,7 @@ const FormattedAIAdvice = ({ advice, riskColor }: { advice: string, riskColor: s
 };
 
 export default function DropAnalysis() {
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const { user } = useAuth();
     const [analyses, setAnalyses] = useState<CourseAnalysis[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -409,25 +416,25 @@ export default function DropAnalysis() {
     };
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <Stack.Screen options={{ headerShown: false }} />
             <SafeAreaView className="flex-1">
                 {/* Header */}
-                <View className="px-4 py-3 border-b border-border/50 flex-row items-center justify-between bg-background/80">
+                <View className="px-4 py-3 border-b border-border/50 flex-row items-center justify-between /80" style={{ backgroundColor: hexColors.background }}>
                     <TouchableOpacity 
                         onPress={() => router.back()}
                         className="w-10 h-10 rounded-full bg-secondary/50 items-center justify-center"
                     >
                         <Ionicons name="arrow-back" size={20} color={theme.colors.foreground} />
                     </TouchableOpacity>
-                    <Text className="text-lg font-bold text-foreground">Drop Analysis</Text>
+                    <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>Drop Analysis</Text>
                     <View className="w-10" />
                 </View>
 
                 {isLoading ? (
                     <View className="flex-1 justify-center items-center">
                         <ActivityIndicator size="large" color={theme.colors.primary} />
-                        <Text className="mt-4 text-muted-foreground">Analyzing your courses...</Text>
+                        <Text className="mt-4 " style={{ color: hexColors.mutedForeground }}>Analyzing your courses...</Text>
                     </View>
                 ) : (
                     <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
@@ -471,7 +478,7 @@ export default function DropAnalysis() {
                             </View>
                         </View>
 
-                        <Text className="text-xl font-bold text-foreground mb-4">Course Recommendations</Text>
+                        <Text className="text-xl font-bold mb-4">Course Recommendations</Text>
 
                         {analyses.length === 0 ? (
                             <EmptyAnalysis />

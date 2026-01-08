@@ -25,7 +25,7 @@ const activeIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
 
 export default function BottomNav() {
     const pathname = usePathname();
-    const { theme } = useTheme();
+    const { theme, hexColors } = useTheme();
 
     const handleNavigation = (route: string) => {
         router.push(route as any);
@@ -41,7 +41,7 @@ export default function BottomNav() {
     }
 
     return (
-        <View className="flex-row border-t border-border bg-card pt-2 pb-5 shadow-lg">
+        <View className="flex-row pt-2 pb-5 shadow-lg" style={{ borderTopWidth: 1, borderTopColor: hexColors.border, backgroundColor: hexColors.card }}>
             {navItems.map((item) => {
                 const isActive = pathname === item.route;
                 const iconName = isActive ? activeIcons[item.icon] : item.icon;
@@ -59,7 +59,11 @@ export default function BottomNav() {
                             color={isActive ? theme.colors.primary : theme.colors.mutedForeground} 
                         />
                         <Text 
-                            className={`text-xs mt-1 ${isActive ? 'text-primary font-semibold' : 'text-muted-foreground font-medium'}`}
+                            className="text-xs mt-1"
+                            style={{ 
+                                color: isActive ? hexColors.primary : hexColors.mutedForeground,
+                                fontWeight: isActive ? '600' : '500'
+                            }}
                         >
                             {item.label}
                         </Text>

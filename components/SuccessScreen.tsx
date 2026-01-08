@@ -25,7 +25,7 @@ export default function SuccessScreen({
     actions,
     icon,
 }: SuccessScreenProps) {
-    const { theme } = useTheme();
+    const { theme, hexColors } = useTheme();
 
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>

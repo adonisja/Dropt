@@ -20,7 +20,7 @@ interface AssignmentInput {
 }
 
 export default function BatchAddAssignments() {
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const router = useRouter();
     const { user } = useAuth();
     const params = useLocalSearchParams();
@@ -165,19 +165,19 @@ export default function BatchAddAssignments() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 justify-center items-center bg-background">
+            <View className="flex-1 justify-center items-center " style={{ backgroundColor: hexColors.background }}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
         );
     }
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <ScrollView className="flex-1 p-4">
-                <Text className="text-2xl font-bold text-foreground mb-4">Review Assignments</Text>
+                <Text className="text-2xl font-bold mb-4">Review Assignments</Text>
                 
-                <Text className="text-sm text-muted-foreground mb-2">Select Course</Text>
-                <View className="bg-card border border-border rounded-lg mb-6">
+                <Text className="text-sm  mb-2" style={{ color: hexColors.mutedForeground }}>Select Course</Text>
+                <View className="borderWidth: 1, borderColor: hexColors.border rounded-lg mb-6" style={{ backgroundColor: hexColors.card }}>
                     <Picker
                         selectedValue={selectedCourseId}
                         onValueChange={(itemValue) => setSelectedCourseId(itemValue)}
@@ -189,21 +189,22 @@ export default function BatchAddAssignments() {
                     </Picker>
                 </View>
 
-                <Text className="text-lg font-semibold text-foreground mb-4">Assignments ({assignments.length})</Text>
+                <Text className="text-lg font-semibold mb-4">Assignments ({assignments.length})</Text>
 
                 {assignments.map((item, index) => (
-                    <View key={item.id} className="bg-card p-4 rounded-xl border border-border mb-4 shadow-sm">
+                    <View key={item.id} className="p-4 rounded-xl borderWidth: 1, borderColor: hexColors.border mb-4 shadow-sm" style={{ backgroundColor: hexColors.card }}>
                         <View className="flex-row justify-between items-center mb-2">
-                            <Text className="font-bold text-muted-foreground">#{index + 1}</Text>
+                            <Text className="font-bold " style={{ color: hexColors.mutedForeground }}>#{index + 1}</Text>
                             <TouchableOpacity onPress={() => removeAssignment(item.id)}>
                                 <Ionicons name="trash-outline" size={20} color={theme.colors.destructive} />
                             </TouchableOpacity>
                         </View>
 
                         <View className="mb-3">
-                            <Text className="text-xs text-muted-foreground mb-1">Name</Text>
+                            <Text className="text-xs mb-1" style={{ color: hexColors.mutedForeground }}>Name</Text>
                             <TextInput
-                                className="bg-background border border-border rounded p-2 text-foreground"
+                                className="rounded p-2"
+                                style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.border, color: hexColors.foreground }}
                                 value={item.name}
                                 onChangeText={(text) => updateAssignment(item.id, 'name', text)}
                             />
@@ -211,9 +212,10 @@ export default function BatchAddAssignments() {
 
                         <View className="flex-row gap-4 mb-3">
                             <View className="flex-1">
-                                <Text className="text-xs text-muted-foreground mb-1">Score</Text>
+                                <Text className="text-xs mb-1" style={{ color: hexColors.mutedForeground }}>Score</Text>
                                 <TextInput
-                                    className="bg-background border border-border rounded p-2 text-foreground"
+                                    className="rounded p-2"
+                                    style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.border, color: hexColors.foreground }}
                                     value={item.scoreEarned}
                                     onChangeText={(text) => updateAssignment(item.id, 'scoreEarned', text)}
                                     keyboardType="numeric"
@@ -221,9 +223,10 @@ export default function BatchAddAssignments() {
                                 />
                             </View>
                             <View className="flex-1">
-                                <Text className="text-xs text-muted-foreground mb-1">Max</Text>
+                                <Text className="text-xs mb-1" style={{ color: hexColors.mutedForeground }}>Max</Text>
                                 <TextInput
-                                    className="bg-background border border-border rounded p-2 text-foreground"
+                                    className="rounded p-2"
+                                    style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.border, color: hexColors.foreground }}
                                     value={item.maxScore}
                                     onChangeText={(text) => updateAssignment(item.id, 'maxScore', text)}
                                     keyboardType="numeric"
@@ -232,13 +235,13 @@ export default function BatchAddAssignments() {
                         </View>
 
                         <View className="mb-2">
-                            <Text className="text-xs text-muted-foreground mb-1">Category</Text>
+                            <Text className="text-xs mb-1" style={{ color: hexColors.mutedForeground }}>Category</Text>
                             {categories.length > 0 ? (
-                                <View className="bg-background border border-border rounded">
+                                <View className="rounded" style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.border }}>
                                     <Picker
                                         selectedValue={item.category}
                                         onValueChange={(val) => updateAssignment(item.id, 'category', val)}
-                                        style={{ color: theme.colors.foreground, height: 50 }}
+                                        style={{ color: hexColors.foreground, height: 50 }}
                                     >
                                         <Picker.Item label="Select Category..." value="" />
                                         {categories.map(cat => (
@@ -248,7 +251,8 @@ export default function BatchAddAssignments() {
                                 </View>
                             ) : (
                                 <TextInput
-                                    className="bg-background border border-border rounded p-2 text-foreground"
+                                    className="rounded p-2"
+                                    style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.border, color: hexColors.foreground }}
                                     value={item.category}
                                     onChangeText={(text) => updateAssignment(item.id, 'category', text)}
                                     placeholder="e.g. Homework"
@@ -261,7 +265,7 @@ export default function BatchAddAssignments() {
                 <View className="h-20" /> 
             </ScrollView>
 
-            <View className="p-4 border-t border-border bg-background">
+            <View className="p-4 border-t border-border " style={{ backgroundColor: hexColors.background }}>
                 <PlatformButton
                     onPress={handleSaveAll}
                     disabled={isSaving}

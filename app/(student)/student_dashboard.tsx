@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useTheme } from '@/lib/theme/theme-context';
 import { fetchStudentCourses, fetchAssignments } from '@/lib/api/data-client';
-import { detectCurrentSemester } from '@/lib/utils/semester-utils';
+import { detectCurrentSemester, getSeasonLabel } from '@/lib/utils/semester-utils';
 import { getOrCreateUserSettings, fetchCompleteCourseData, transformToStudentCourseData } from '@/lib/api/data-client';
 import { calculateCurrentGrade } from '@/lib/logic/calculateCurrentGrade';
 import { calculateSemesterGPA } from '@/lib/logic/calculateGPA';
@@ -24,7 +24,7 @@ interface DashboardAssignment {
 
 export default function StudentDashboard() {
     const { user } = useAuth();
-    const { theme, isDark } = useTheme();
+    const { theme, isDark, colors, hexColors } = useTheme();
     const { width } = useWindowDimensions();
     const isWideScreen = width > 768;
 
@@ -35,11 +35,11 @@ export default function StudentDashboard() {
     const [totalTasks, setTotalTasks] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [recentActivity, setRecentActivity] = useState<DashboardAssignment[]>([]);
+    const [seasonLabel, setSeasonLabel] = useState<string>('🌸 Spring');
     const [currentSemesterLabel, setCurrentSemesterLabel] = useState(() => {
         const { semester, year } = detectCurrentSemester();
         return `${semester} ${year}`;
     });
-    
 
     useEffect(() => {
         const loadDashboardData = async () => {
@@ -47,7 +47,7 @@ export default function StudentDashboard() {
             try {
 
                 // 1. Get current semester info
-                const {semester, year} = detectCurrentSemester();
+                const {semester, year, season} = detectCurrentSemester();
 
                 // 2. fetch or create user settings
                 const settings = await getOrCreateUserSettings(
@@ -56,6 +56,8 @@ export default function StudentDashboard() {
                     year
                 );
 
+                // Set the season label for display
+                setSeasonLabel(getSeasonLabel(season));
                 setCurrentSemesterLabel(`${settings?.currentSemester} ${settings?.currentYear}`);
 
                 // 3. Fetch courses filtered by current semester
@@ -160,8 +162,8 @@ export default function StudentDashboard() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 bg-background justify-center items-center">
-                <ActivityIndicator size="large" color={theme.colors.primary} />
+            <View className="flex-1 justify-center items-center" style={{ backgroundColor: hexColors.background }}>
+                <ActivityIndicator size="large" color={hexColors.primary} />
             </View>
         );
     }
@@ -173,8 +175,13 @@ export default function StudentDashboard() {
             style={{ width: isWideScreen ? '23%' : '48%' }}
         >
             <TouchableOpacity
-                className="bg-card rounded-2xl border border-border shadow-sm items-center justify-center"
-                style={{ aspectRatio: 1.2 }}
+                className="rounded-2xl shadow-sm items-center justify-center"
+                style={{ 
+                    aspectRatio: 1.2,
+                    backgroundColor: hexColors.card,
+                    borderWidth: 1,
+                    borderColor: hexColors.border
+                }}
                 onPress={() => router.push(route)}
                 activeOpacity={0.7}
             >
@@ -185,15 +192,15 @@ export default function StudentDashboard() {
                 >
                     <Ionicons name={icon} size={22} color={color} />
                 </View>
-                <Text className="text-sm font-bold text-foreground text-center px-2">{label}</Text>
-                <Text className="text-[10px] text-muted-foreground text-center mt-1 uppercase tracking-wide">{sub}</Text>
+                <Text className="text-sm font-bold text-center px-2" style={{ color: hexColors.foreground }}>{label}</Text>
+                <Text className="text-[10px] text-center mt-1 uppercase tracking-wide" style={{ color: hexColors.mutedForeground }}>{sub}</Text>
             </TouchableOpacity>
         </Animated.View>
     );
 
     return (
-        <View className="flex-1 bg-background">
-            <SafeAreaView className="flex-1">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
+            <SafeAreaView className="flex-1" edges={['left', 'right', 'bottom']}>
                 <ScrollView
                     className="flex-1"
                     contentContainerStyle={{ 
@@ -206,24 +213,29 @@ export default function StudentDashboard() {
                     <View className={`w-full mx-auto ${isWideScreen ? 'max-w-6xl' : 'max-w-md'}`}>
                         
                         {/* Full Width Header Section */}
-                        <View className="mb-6">
+                        <View className="mb-3">
                             <View className="flex-row items-center justify-between">
                                 <View>
-                                    <Text className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">
+                                    <Text className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: hexColors.mutedForeground }}>
                                         Student Dashboard
                                     </Text>
-                                    <Text className="text-3xl font-extrabold text-foreground">
+                                    <Text className="text-3xl font-extrabold" style={{ color: hexColors.foreground }}>
                                         Welcome, {user?.name?.split(' ')[0] || 'Student'} 
                                     </Text>
-                                    <Text className="text-muted-foreground mt-1">
+                                    <Text className="mt-1" style={{ color: hexColors.mutedForeground }}>
                                         Here is what's happening today.
                                     </Text>
                                 </View>
                                 <TouchableOpacity 
                                     onPress={() => router.push('/(student)/tools/deadline-tracker')}
-                                    className="bg-card p-3 rounded-full border border-border"
+                                    className="p-3 rounded-full"
+                                    style={{
+                                        backgroundColor: hexColors.card,
+                                        borderWidth: 1,
+                                        borderColor: hexColors.border
+                                    }}
                                 >
-                                    <Ionicons name="notifications-outline" size={24} color={theme.colors.foreground} />
+                                    <Ionicons name="notifications-outline" size={24} color={hexColors.foreground} />
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -233,51 +245,143 @@ export default function StudentDashboard() {
                             
                             {/* LEFT COLUMN: Main Stats & Grid */}
                             <View className={isWideScreen ? "flex-[2]" : "w-full"}>
-                                {/* Hero Card with Orange to Purple Gradient */}
+                                {/* Hero Card with Enhanced Design */}
                                 <Animated.View entering={FadeInDown.delay(100).springify()} className="mb-6">
                                     <LinearGradient
-                                        colors={['#FF8C66', '#9F57D6']}
+                                        colors={[colors.gradientStart, colors.gradientMiddle, colors.gradientEnd]}
                                         start={{ x: 0, y: 0 }}
                                         end={{ x: 1, y: 1 }}
-                                        className="rounded-3xl p-6 shadow-lg overflow-hidden"
+                                        className="rounded-2xl p-6 sm:p-8 shadow-lg overflow-hidden"
                                         style={{ position: 'relative' }}
                                     >
-                                        {/* Decorative Circle Overlay */}
+                                        {/* Decorative Blur Circles with Vibrant Colors */}
                                         <View 
                                             style={{
                                                 position: 'absolute',
-                                                top: -50,
-                                                right: -50,
-                                                width: 200,
-                                                height: 200,
-                                                borderRadius: 100,
+                                                right: -32,
+                                                top: -32,
+                                                width: 128,
+                                                height: 128,
+                                                borderRadius: 64,
+                                                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                                shadowColor: '#FFFFFF',
+                                                shadowOffset: { width: 0, height: 0 },
+                                                shadowOpacity: 0.3,
+                                                shadowRadius: 20,
+                                            }}
+                                        />
+                                        <View 
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: -16,
+                                                left: -16,
+                                                width: 96,
+                                                height: 96,
+                                                borderRadius: 48,
+                                                backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                                                shadowColor: '#FFFFFF',
+                                                shadowOffset: { width: 0, height: 0 },
+                                                shadowOpacity: 0.3,
+                                                shadowRadius: 15,
+                                            }}
+                                        />
+                                        <View 
+                                            style={{
+                                                position: 'absolute',
+                                                right: 48,
+                                                top: 48,
+                                                width: 64,
+                                                height: 64,
+                                                borderRadius: 32,
                                                 backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                                shadowColor: '#FFFFFF',
+                                                shadowOffset: { width: 0, height: 0 },
+                                                shadowOpacity: 0.2,
+                                                shadowRadius: 10,
                                             }}
                                         />
                                         
-                                        {/* Icon at top left */}
-                                        <View className="mb-4">
-                                            <View className="bg-white/20 p-2.5 rounded-xl backdrop-blur-md self-start">
+                                        {/* Icon at top with glow effect */}
+                                        <View className="mb-4 inline-flex">
+                                            <View 
+                                                className="bg-white/25 p-3 rounded-xl"
+                                                style={{
+                                                    shadowColor: '#FFFFFF',
+                                                    shadowOffset: { width: 0, height: 0 },
+                                                    shadowOpacity: 0.5,
+                                                    shadowRadius: 12,
+                                                    elevation: 8,
+                                                }}
+                                            >
                                                 <Ionicons name="school" size={24} color="white" />
                                             </View>
                                         </View>
                                         
-                                        {/* Content */}
-                                        <View className="mb-4">
-                                            <Text className="text-white/80 font-semibold text-xs uppercase tracking-widest mb-2">
-                                                {currentSemesterLabel}
+                                        {/* Content with enhanced text shadow */}
+                                        <View className="relative z-10 items-center px-4">
+                                            {/* Semester label with season emoji */}
+                                            <View className="flex-row items-center gap-2 mb-1">
+                                                <Text 
+                                                    className="text-base"
+                                                    style={{
+                                                        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                                                        textShadowOffset: { width: 0, height: 1 },
+                                                        textShadowRadius: 3,
+                                                    }}
+                                                >
+                                                    {seasonLabel.split(' ')[0]}
+                                                </Text>
+                                                <Text 
+                                                    className="text-sm font-medium uppercase tracking-wide text-center"
+                                                    style={{
+                                                        color: 'rgba(255, 255, 255, 0.95)',
+                                                        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                                                        textShadowOffset: { width: 0, height: 1 },
+                                                        textShadowRadius: 3,
+                                                    }}
+                                                >
+                                                    {currentSemesterLabel}
+                                                </Text>
+                                            </View>
+                                            <Text 
+                                                className="mt-2 text-5xl font-bold text-center"
+                                                style={{
+                                                    color: '#FFFFFF',
+                                                    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+                                                    textShadowOffset: { width: 0, height: 2 },
+                                                    textShadowRadius: 4,
+                                                }}
+                                            >
+                                                {courseCount}
                                             </Text>
-                                            <Text className="text-6xl font-black text-white mb-1">{courseCount}</Text>
-                                            <Text className="text-white/90 font-medium text-base">Active Courses Enrolled</Text>
+                                            <Text 
+                                                className="mt-1 text-lg text-center"
+                                                style={{
+                                                    color: 'rgba(255, 255, 255, 0.95)',
+                                                    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+                                                    textShadowOffset: { width: 0, height: 1 },
+                                                    textShadowRadius: 2,
+                                                }}
+                                            >
+                                                Active Courses Enrolled
+                                            </Text>
                                         </View>
                                         
-                                        {/* View All Button at Bottom */}
+                                        {/* View All Button with enhanced styling */}
                                         <TouchableOpacity 
                                             onPress={() => router.push('/(student)/courses')}
-                                            className="flex-row items-center self-start px-5 py-2.5 rounded-full"
-                                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+                                            className="mt-6 mb-2 inline-flex flex-row items-center gap-2 rounded-full px-4 py-2"
+                                            style={{
+                                                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                                                shadowColor: '#FFFFFF',
+                                                shadowOffset: { width: 0, height: 2 },
+                                                shadowOpacity: 0.3,
+                                                shadowRadius: 8,
+                                                elevation: 5,
+                                            }}
+                                            activeOpacity={0.8}
                                         >
-                                            <Text className="text-white text-sm font-bold mr-2">View All</Text>
+                                            <Text className="text-sm font-medium text-white">View All</Text>
                                             <Ionicons name="arrow-forward" size={16} color="white" />
                                         </TouchableOpacity>
                                     </LinearGradient>
@@ -289,49 +393,63 @@ export default function StudentDashboard() {
                                     className="flex-row justify-between mb-6 gap-3"
                                 >
                                     {/* GPA Card */}
-                                    <View className="flex-1 bg-card rounded-2xl p-4 border border-border shadow-sm">
+                                    <View className="flex-1 rounded-2xl p-4 shadow-sm" style={{
+                                        backgroundColor: hexColors.card,
+                                        borderWidth: 1,
+                                        borderColor: hexColors.border
+                                    }}>
                                         <View className="bg-emerald-500/10 w-10 h-10 rounded-full items-center justify-center mb-3">
-                                            <Ionicons name="trending-up" size={20} color="#10B981" />
+                                            <Ionicons name="trending-up" size={20} color={isDark ? "#34D399" : "#10B981"} />
                                         </View>
-                                        <Text className="text-2xl font-black text-foreground">
+                                        <Text className="text-2xl font-black" style={{ color: hexColors.foreground }}>
                                             {semesterGPA !== null ? semesterGPA.toFixed(2) : '--'}
                                         </Text>
-                                        <Text className="text-xs text-muted-foreground mt-1">GPA</Text>
+                                        <Text className="text-xs mt-1" style={{ color: hexColors.mutedForeground }}>GPA</Text>
                                     </View>
 
                                     {/* Study Hours Card */}
                                     <TouchableOpacity
-                                        className="flex-1 bg-card rounded-2xl p-4 border border-border shadow-sm"
+                                        className="flex-1 rounded-2xl p-4 shadow-sm"
+                                        style={{
+                                            backgroundColor: hexColors.card,
+                                            borderWidth: 1,
+                                            borderColor: hexColors.border
+                                        }}
                                         onPress={() => router.push('/(student)/tools/study-hours')}
                                         activeOpacity={0.7}
                                     >
                                         <View className="bg-teal-500/10 w-10 h-10 rounded-full items-center justify-center mb-3">
-                                            <Ionicons name="time" size={20} color="#14B8A6" />
+                                            <Ionicons name="time" size={20} color={isDark ? "#5EEAD4" : "#14B8A6"} />
                                         </View>
-                                        <Text className="text-2xl font-black text-foreground">
+                                        <Text className="text-2xl font-black" style={{ color: hexColors.foreground }}>
                                             {weeklyStudyHours}
                                         
                                         </Text>
-                                        <Text className="text-xs text-muted-foreground mt-1">Weekly Hours</Text>
+                                        <Text className="text-xs mt-1" style={{ color: hexColors.mutedForeground }}>Weekly Hours</Text>
                                     </TouchableOpacity>
 
                                     {/* Tasks Done Card */}
                                     <TouchableOpacity
-                                        className="flex-1 bg-card rounded-2xl p-4 border border-border shadow-sm"
+                                        className="flex-1 rounded-2xl p-4 shadow-sm"
+                                        style={{
+                                            backgroundColor: hexColors.card,
+                                            borderWidth: 1,
+                                            borderColor: hexColors.border
+                                        }}
                                         onPress={() => router.push('/(student)/tools/deadline-tracker')}
                                         activeOpacity={0.7}
                                     >
                                         <View className="bg-green-500/10 w-10 h-10 rounded-full items-center justify-center mb-3">
-                                            <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+                                            <Ionicons name="checkmark-circle" size={20} color={isDark ? "#4ADE80" : "#22C55E"} />
                                         </View>
-                                        <Text className="text-2xl font-black text-foreground">
+                                        <Text className="text-2xl font-black" style={{ color: hexColors.foreground }}>
                                             {totalTasks > 0 ? `${completedTasks}/${totalTasks}` : '--'}
                                         </Text>
-                                        <Text className="text-xs text-muted-foreground mt-1">Tasks Done</Text>
+                                        <Text className="text-xs mt-1" style={{ color: hexColors.mutedForeground }}>Tasks Done</Text>
                                     </TouchableOpacity>
                                 </Animated.View>
 
-                                <Text className="text-lg font-bold text-foreground mb-4">
+                                <Text className="text-lg font-bold mb-4" style={{ color: hexColors.foreground }}>
                                     Tools & Utilities
                                 </Text>
                                 
@@ -357,10 +475,14 @@ export default function StudentDashboard() {
                                     OR we treat the whole right side as a card. 
                                     Here we make the card start exactly at the top line of the Left Column's blue card */}
                                 
-                                <View className={`bg-card rounded-3xl p-6 border border-border shadow-sm ${isWideScreen ? 'min-h-[500px]' : 'min-h-[200px]'}`}>
+                                <View className={`rounded-3xl p-6 shadow-sm ${isWideScreen ? 'min-h-[500px]' : 'min-h-[200px]'}`} style={{
+                                    backgroundColor: hexColors.card,
+                                    borderWidth: 1,
+                                    borderColor: hexColors.border
+                                }}>
                                     <View className="flex-row justify-between items-center mb-6">
-                                        <Text className="text-lg font-bold text-foreground">Recent Activity</Text>
-                                        <Ionicons name="notifications-outline" size={20} color={theme.colors.mutedForeground} />
+                                        <Text className="text-lg font-bold" style={{ color: hexColors.foreground }}>Recent Activity</Text>
+                                        <Ionicons name="notifications-outline" size={20} color={hexColors.mutedForeground} />
                                     </View>
 
                                     {/* Recent Activity List */}
@@ -397,10 +519,10 @@ export default function StudentDashboard() {
                                                         />
                                                     </View>
                                                     <View className="flex-1">
-                                                        <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
+                                                        <Text className="text-base font-semibold" numberOfLines={1} style={{ color: hexColors.foreground }}>
                                                             {item.name}
                                                         </Text>
-                                                        <Text className="text-sm text-muted-foreground">
+                                                        <Text className="text-sm" style={{ color: hexColors.mutedForeground }}>
                                                             {item.courseName} • {
                                                                 item.daysRemaining < 0 ? 'Overdue' :
                                                                 item.daysRemaining === 0 ? 'Due Today' :
@@ -409,23 +531,26 @@ export default function StudentDashboard() {
                                                             }
                                                         </Text>
                                                     </View>
-                                                    <Ionicons name="chevron-forward" size={20} color={theme.colors.mutedForeground} />
+                                                    <Ionicons name="chevron-forward" size={20} color={hexColors.mutedForeground} />
                                                 </TouchableOpacity>
                                             ))}
                                             <TouchableOpacity 
                                                 className="mt-4 py-2 items-center"
                                                 onPress={() => router.push('/(student)/tools/deadline-tracker')}
                                             >
-                                                <Text className="font-semibold" style={{ color: '#FF8C66' }}>View All Deadlines</Text>
+                                                <Text className="font-semibold" style={{ color: hexColors.primary }}>View All Deadlines</Text>
                                             </TouchableOpacity>
                                         </View>
                                     ) : (
-                                        <View className="flex-1 items-center justify-center border-2 border-dashed border-border/50 rounded-2xl p-4 bg-secondary/30">
-                                            <View className="w-14 h-14 bg-background rounded-full items-center justify-center mb-3 shadow-sm">
-                                                <Ionicons name="hourglass-outline" size={24} color={theme.colors.mutedForeground} />
+                                        <View className="flex-1 items-center justify-center border-2 border-dashed rounded-2xl p-4" style={{
+                                            borderColor: `${colors.border}80`,
+                                            backgroundColor: `${colors.secondary}30`
+                                        }}>
+                                            <View className="w-14 h-14 rounded-full items-center justify-center mb-3 shadow-sm" style={{ backgroundColor: hexColors.background }}>
+                                                <Ionicons name="hourglass-outline" size={24} color={hexColors.mutedForeground} />
                                             </View>
-                                            <Text className="text-foreground font-medium text-center">All caught up!</Text>
-                                            <Text className="text-xs text-muted-foreground text-center mt-2 leading-5">
+                                            <Text className="font-medium text-center" style={{ color: hexColors.foreground }}>All caught up!</Text>
+                                            <Text className="text-xs text-center mt-2 leading-5" style={{ color: hexColors.secondaryForeground }}>
                                                 When your grades change or assignments are due, they will appear here.
                                             </Text>
                                         </View>

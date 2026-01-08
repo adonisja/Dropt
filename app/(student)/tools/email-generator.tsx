@@ -7,14 +7,7 @@ import { useTheme } from '@/lib/theme/theme-context';
 import { AIService } from '@/lib/api/ai-service';
 import PlatformButton from '@/components/PlatformButton';
 
-const TOPICS = [
-    "Request Meeting",
-    "Ask for Extra Credit",
-    "Discuss Grade",
-    "Extension Request",
-    "Explain Absence",
-    "Clarify Assignment",
-    "Drop Course Inquiry"
+const TOPICS = [ "Request Meeting", "Ask for Extra Credit", "Discuss Grade", "Extension Request", "Explain Absence", "Clarify Assignment", "Drop Course Inquiry"
 ];
 
 const TONES = [
@@ -24,7 +17,7 @@ const TONES = [
 ];
 
 export default function EmailGenerator() {
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const router = useRouter();
     const params = useLocalSearchParams<{ 
         courseName?: string; 
@@ -105,7 +98,7 @@ export default function EmailGenerator() {
     };
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <Stack.Screen options={{ headerShown: false }} />
             <View className="px-4 py-2 flex-row items-center border-b border-border/50 safe-top">
                 <TouchableOpacity 
@@ -114,7 +107,7 @@ export default function EmailGenerator() {
                 >
                     <Ionicons name="arrow-back" size={24} color={theme.colors.foreground} />
                 </TouchableOpacity>
-                <Text className="text-lg font-bold text-foreground ml-2">Email Generator</Text>
+                <Text className="text-lg font-bold ml-2">Email Generator</Text>
             </View>
 
             <KeyboardAvoidingView 
@@ -124,13 +117,14 @@ export default function EmailGenerator() {
                 <ScrollView className="flex-1 p-4" contentContainerStyle={{ paddingBottom: 40 }}>
                     
                     {/* Context Inputs */}
-                    <View className="bg-card rounded-xl p-4 mb-4 border border-border">
-                        <Text className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Details</Text>
+                    <View className="rounded-xl p-4 mb-4" style={{ borderWidth: 1, borderColor: hexColors.border }}>
+                        <Text className="text-sm font-semibold  mb-3 uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>Details</Text>
                         
                         <View className="mb-3">
-                            <Text className="text-xs text-muted-foreground mb-1">Course Name</Text>
+                            <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Course Name</Text>
                             <TextInput
-                                className="bg-background border border-input rounded-lg p-3 text-foreground"
+                                className="rounded-lg p-3"
+                                style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.input, color: hexColors.foreground }}
                                 value={courseName}
                                 onChangeText={setCourseName}
                                 placeholder="e.g. Intro to Psychology"
@@ -139,9 +133,10 @@ export default function EmailGenerator() {
                         </View>
 
                         <View>
-                            <Text className="text-xs text-muted-foreground mb-1">Professor Name (Optional)</Text>
+                            <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Professor Name (Optional)</Text>
                             <TextInput
-                                className="bg-background border border-input rounded-lg p-3 text-foreground"
+                                className="rounded-lg p-3"
+                                style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.input, color: hexColors.foreground }}
                                 value={professorName}
                                 onChangeText={setProfessorName}
                                 placeholder="e.g. Dr. Smith"
@@ -151,37 +146,41 @@ export default function EmailGenerator() {
                     </View>
 
                     {/* Topic Selection */}
-                    <View className="bg-card rounded-xl p-4 mb-4 border border-border">
-                        <Text className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">What is this about?</Text>
+                    <View className="rounded-xl p-4 mb-4" style={{ borderWidth: 1, borderColor: hexColors.border }}>
+                        <Text className="text-sm font-semibold  mb-3 uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>What is this about?</Text>
                         <View className="flex-row flex-wrap gap-2 mb-3">
                             {TOPICS.map((t) => (
                                 <TouchableOpacity
                                     key={t}
                                     onPress={() => setTopic(t)}
-                                    className={`px-3 py-2 rounded-full border ${
-                                        topic === t 
-                                            ? 'bg-primary border-primary' 
-                                            : 'bg-background border-border'
-                                    }`}
+                                    className="px-3 py-2 rounded-full"
+                                    style={{
+                                        backgroundColor: topic === t ? hexColors.primary : hexColors.background,
+                                        borderWidth: 1,
+                                        borderColor: topic === t ? hexColors.primary : hexColors.border
+                                    }}
                                 >
-                                    <Text className={`text-xs font-medium ${
-                                        topic === t ? 'text-primary-foreground' : 'text-foreground'
-                                    }`}>
+                                    <Text 
+                                        className="text-xs font-medium"
+                                        style={{ color: topic === t ? hexColors.primaryForeground : hexColors.foreground }}
+                                    >
                                         {t}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
                             <TouchableOpacity
                                 onPress={() => setTopic('Other')}
-                                className={`px-3 py-2 rounded-full border ${
-                                    topic === 'Other' 
-                                        ? 'bg-primary border-primary' 
-                                        : 'bg-background border-border'
-                                }`}
+                                className="px-3 py-2 rounded-full"
+                                style={{
+                                    backgroundColor: topic === 'Other' ? hexColors.primary : hexColors.background,
+                                    borderWidth: 1,
+                                    borderColor: topic === 'Other' ? hexColors.primary : hexColors.border
+                                }}
                             >
-                                <Text className={`text-xs font-medium ${
-                                    topic === 'Other' ? 'text-primary-foreground' : 'text-foreground'
-                                }`}>
+                                <Text 
+                                    className="text-xs font-medium"
+                                    style={{ color: topic === 'Other' ? hexColors.primaryForeground : hexColors.foreground }}
+                                >
                                     Other
                                 </Text>
                             </TouchableOpacity>
@@ -189,7 +188,8 @@ export default function EmailGenerator() {
 
                         {topic === 'Other' && (
                             <TextInput
-                                className="bg-background border border-input rounded-lg p-3 text-foreground"
+                                className="rounded-lg p-3"
+                                style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.input, color: hexColors.foreground }}
                                 value={customTopic}
                                 onChangeText={setCustomTopic}
                                 placeholder="Enter your topic..."
@@ -199,27 +199,29 @@ export default function EmailGenerator() {
                     </View>
 
                     {/* Tone Selection */}
-                    <View className="bg-card rounded-xl p-4 mb-6 border border-border">
-                        <Text className="text-sm font-semibold text-muted-foreground mb-3 uppercase tracking-wider">Tone</Text>
+                    <View className="rounded-xl p-4 mb-6" style={{ borderWidth: 1, borderColor: hexColors.border }}>
+                        <Text className="text-sm font-semibold  mb-3 uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>Tone</Text>
                         <View className="flex-row gap-3">
                             {TONES.map((t) => (
                                 <TouchableOpacity
                                     key={t.id}
                                     onPress={() => setTone(t.id as any)}
-                                    className={`flex-1 p-3 rounded-xl border items-center ${
-                                        tone === t.id 
-                                            ? 'bg-primary/10 border-primary' 
-                                            : 'bg-background border-border'
-                                    }`}
+                                    className="flex-1 p-3 rounded-xl items-center"
+                                    style={{
+                                        backgroundColor: tone === t.id ? `${hexColors.primary}10` : hexColors.background,
+                                        borderWidth: 1,
+                                        borderColor: tone === t.id ? hexColors.primary : hexColors.border
+                                    }}
                                 >
                                     <Ionicons 
                                         name={t.icon as any} 
                                         size={20} 
-                                        color={tone === t.id ? theme.colors.primary : theme.colors.mutedForeground} 
+                                        color={tone === t.id ? hexColors.primary : hexColors.mutedForeground} 
                                     />
-                                    <Text className={`text-xs font-medium mt-2 ${
-                                        tone === t.id ? 'text-primary' : 'text-muted-foreground'
-                                    }`}>
+                                    <Text 
+                                        className="text-xs font-medium mt-2"
+                                        style={{ color: tone === t.id ? hexColors.primary : hexColors.mutedForeground }}
+                                    >
                                         {t.label}
                                     </Text>
                                 </TouchableOpacity>
@@ -255,7 +257,7 @@ export default function EmailGenerator() {
                         onPress={() => router.replace('/(student)/student_dashboard')}
                         className="items-center py-3 mb-6"
                     >
-                        <Text className="text-muted-foreground font-medium text-base">Cancel</Text>
+                        <Text className="font-medium text-base" style={{ color: hexColors.mutedForeground }}>Cancel</Text>
                     </TouchableOpacity>
 
                     {/* Result Modal */}
@@ -266,9 +268,9 @@ export default function EmailGenerator() {
                         onRequestClose={() => setIsModalVisible(false)}
                     >
                         <View className="flex-1 bg-black/50 justify-end">
-                            <View className="bg-background rounded-t-3xl h-[85%] p-6 shadow-2xl">
+                            <View className="rounded-t-3xl p-6" style={{ backgroundColor: hexColors.background, height: '85%' }}>
                                 <View className="flex-row justify-between items-center mb-6">
-                                    <Text className="text-xl font-bold text-foreground">Generated Draft</Text>
+                                    <Text className="text-xl font-bold " style={{ color: hexColors.foreground }}>Generated Draft</Text>
                                     <TouchableOpacity 
                                         onPress={() => setIsModalVisible(false)}
                                         className="p-2 bg-secondary rounded-full"
@@ -278,7 +280,7 @@ export default function EmailGenerator() {
                                 </View>
 
                                 <TextInput
-                                    className="flex-1 bg-card border border-border rounded-xl p-4 text-foreground text-base leading-6 mb-6"
+                                    className="flex-1  borderWidth: 1, borderColor: hexColors.border rounded-xl p-4 text-base leading-6 mb-6" style={{ backgroundColor: hexColors.card }}
                                     multiline
                                     value={generatedEmail}
                                     onChangeText={setGeneratedEmail}
@@ -291,7 +293,7 @@ export default function EmailGenerator() {
                                         className="flex-1 bg-secondary p-4 rounded-xl flex-row justify-center items-center"
                                     >
                                         <Ionicons name="copy-outline" size={20} color={theme.colors.foreground} style={{ marginRight: 8 }} />
-                                        <Text className="text-foreground font-semibold">Copy Text</Text>
+                                        <Text className="font-semibold" style={{ color: hexColors.foreground }}>Copy Text</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity 

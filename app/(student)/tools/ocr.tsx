@@ -48,7 +48,7 @@ type ExtractedData = ExtractedSyllabus | ExtractedGrades;
 
 
 export default function OCRTool() {
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const [image, setImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
@@ -290,10 +290,10 @@ export default function OCRTool() {
     }, [extractedData]);
 
     return (
-        <View className="flex-1 bg-background p-4">
-            <Text className="text-2xl font-bold text-foreground mb-4">Scan Images</Text>
+        <View className="flex-1  p-4" style={{ backgroundColor: hexColors.background }}>
+            <Text className="text-2xl font-bold mb-4">Scan Images</Text>
             {/* Document Type Selector */}
-            <Text className="text-sm text-muted-foreground mb-3">
+            <Text className="text-sm  mb-3" style={{ color: hexColors.mutedForeground }}>
                 Select the file you're uploading: a Course Syllabus/Rubric or a Grade Report
             </Text>
             <View className="flex-row mb-6 bg-secondary/30 p-1 rounded-xl">
@@ -324,13 +324,13 @@ export default function OCRTool() {
                     {/* Input Type Switcher */}
                     <View className="flex-row bg-secondary/20 p-1 rounded-lg mb-4">
                         <TouchableOpacity 
-                            className={`flex-1 py-2 rounded-md items-center ${inputType === 'image' ? 'bg-background shadow-sm' : ''}`}
+                            className={`flex-1 py-2 rounded-md items-center ${inputType === 'image' ? ' shadow-sm' : ''}`} style={{ backgroundColor: hexColors.background }}
                             onPress={() => setInputType('image')}
                         >
                             <Text className={`font-medium ${inputType === 'image' ? 'text-foreground' : 'text-muted-foreground'}`}>Image</Text>
                         </TouchableOpacity>
                         <TouchableOpacity 
-                            className={`flex-1 py-2 rounded-md items-center ${inputType === 'text' ? 'bg-background shadow-sm' : ''}`}
+                            className={`flex-1 py-2 rounded-md items-center ${inputType === 'text' ? ' shadow-sm' : ''}`} style={{ backgroundColor: hexColors.background }}
                             onPress={() => setInputType('text')}
                         >
                             <Text className={`font-medium ${inputType === 'text' ? 'text-foreground' : 'text-muted-foreground'}`}>File / Text</Text>
@@ -340,7 +340,7 @@ export default function OCRTool() {
                     {/* Privacy Warning */}
                     <View className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 mb-4 flex-row items-start gap-2">
                         <Ionicons name="shield-checkmark-outline" size={16} color="#F59E0B" style={{ marginTop: 2 }} />
-                        <Text className="text-xs text-muted-foreground flex-1">
+                        <Text className="text-xs  flex-1" style={{ color: hexColors.mutedForeground }}>
                             <Text className="font-bold text-amber-500">Privacy Notice: </Text>
                             This document will be processed by AI. Please redact sensitive personal info (like Student IDs) before uploading.
                         </Text>
@@ -354,17 +354,17 @@ export default function OCRTool() {
                             ) : (
                                 <View className="items-center">
                                     <Ionicons name="scan-outline" size={48} color={theme.colors.mutedForeground} />
-                                    <Text className="text-muted-foreground mt-2">No image selected</Text>
+                                    <Text className="mt-2" style={{ color: hexColors.mutedForeground }}>No image selected</Text>
                                 </View>
                             )}
                         </View>
                     ) : (
-                        <View className="h-64 bg-secondary/30 rounded-xl border border-border mb-6 p-2">
+                        <View className="h-64 bg-secondary/30 rounded-xl borderWidth: 1, borderColor: hexColors.border mb-6 p-2">
                             {selectedFile ? (
                                 <View className="flex-1 items-center justify-center">
                                     <Ionicons name="document-text-outline" size={48} color={theme.colors.primary} />
-                                    <Text className="text-foreground font-semibold mt-2">{selectedFile.name}</Text>
-                                    <Text className="text-muted-foreground text-xs mt-1">Ready to extract</Text>
+                                    <Text className="font-semibold mt-2" style={{ color: hexColors.foreground }}>{selectedFile.name}</Text>
+                                    <Text className="text-xs mt-1" style={{ color: hexColors.mutedForeground }}>Ready to extract</Text>
                                     <TouchableOpacity 
                                         onPress={() => { setSelectedFile(null); setTextInput(''); }}
                                         className="mt-4 bg-destructive/10 px-3 py-1 rounded-full"
@@ -374,7 +374,7 @@ export default function OCRTool() {
                                 </View>
                             ) : (
                                 <TextInput
-                                    className="flex-1 text-foreground p-2 text-sm"
+                                    className="flex-1 p-2 text-sm"
                                     multiline
                                     placeholder="Paste text here OR click 'Pick File' below..."
                                     placeholderTextColor={theme.colors.mutedForeground}
@@ -460,34 +460,34 @@ export default function OCRTool() {
 
             {/* Results Area */}
             {extractedData && (
-                <ScrollView className="flex-1 mt-4 bg-card p-4 rounded-xl border border-border mb-8">
-                    <Text className="font-bold text-lg mb-4 text-foreground">
+                <ScrollView className="flex-1 mt-4  p-4 rounded-xl borderWidth: 1, borderColor: hexColors.border mb-8" style={{ backgroundColor: hexColors.card }}>
+                    <Text className="font-bold text-lg mb-4 " style={{ color: hexColors.foreground }}>
                         {extractedData.type === 'syllabus' ? 'Syllabus Detected' : 'Grades Detected'}
                     </Text>
 
                     {extractedData.type === 'syllabus' ? (
                         <View>
-                            <Text className="text-lg font-semibold text-primary mb-1">{extractedData.courseInfo.courseName}</Text>
-                            <Text className="text-muted-foreground mb-4">{extractedData.courseInfo.instructor} • {extractedData.courseInfo.officeHours}</Text>
+                            <Text className="text-lg font-semibold  mb-1" style={{ color: hexColors.primary }}>{extractedData.courseInfo.courseName}</Text>
+                            <Text className="mb-4" style={{ color: hexColors.mutedForeground }}>{extractedData.courseInfo.instructor} • {extractedData.courseInfo.officeHours}</Text>
                             
-                            <Text className="font-semibold mb-2 text-foreground">Grading Breakdown:</Text>
+                            <Text className="font-semibold mb-2 " style={{ color: hexColors.foreground }}>Grading Breakdown:</Text>
                             {extractedData.grading.map((item, index) => (
                                 <View key={index} className="flex-row justify-between py-2 border-b border-border">
-                                    <Text className="text-foreground">{item.category}</Text>
-                                    <Text className="font-bold text-foreground">{item.weight}%</Text>
+                                    <Text className="text" style={{ color: hexColors.foreground }}>{item.category}</Text>
+                                    <Text className="font-bold " style={{ color: hexColors.foreground }}>{item.weight}%</Text>
                                 </View>
                             ))}
                         </View>
                     ) : (
                         <View>
-                            <Text className="text-muted-foreground mb-4">Source: {extractedData.source}</Text>
+                            <Text className="mb-4" style={{ color: hexColors.mutedForeground }}>Source: {extractedData.source}</Text>
                             
                             {extractedData.assignments.map((item, index) => (
                                 <View key={index} className="flex-row justify-between items-center py-3 border-b border-border">
                                     <View>
-                                        <Text className="font-medium text-foreground">{item.name}</Text>
+                                        <Text className="font-medium " style={{ color: hexColors.foreground }}>{item.name}</Text>
                                         <View className="flex-row items-center">
-                                            <Text className="text-xs text-muted-foreground mr-2">Due: {item.dateDue}</Text>
+                                            <Text className="text-xs  mr-2" style={{ color: hexColors.mutedForeground }}>Due: {item.dateDue}</Text>
                                             {item.isDateEstimated && (
                                                 <View className="bg-yellow-100 px-2 py-0.5 rounded">
                                                     <Text className="text-[10px] text-yellow-800 font-bold">ESTIMATED</Text>
@@ -496,7 +496,7 @@ export default function OCRTool() {
                                         </View>
                                     </View>
                                     <View className="items-end">
-                                        <Text className="font-bold text-foreground">{item.scoreEarned}/{item.maxScore}</Text>
+                                        <Text className="font-bold " style={{ color: hexColors.foreground }}>{item.scoreEarned}/{item.maxScore}</Text>
                                     </View>
                                 </View>
                             ))}
@@ -536,7 +536,7 @@ export default function OCRTool() {
                         onPress={() => setExtractedData(null)}
                         className="py-3 items-center"
                     >
-                        <Text className="text-primary font-medium">Scan Another Document</Text>
+                        <Text className="font-medium" style={{ color: hexColors.primary }}>Scan Another Document</Text>
                     </TouchableOpacity>
                 </View>
             )}

@@ -10,7 +10,7 @@ import { seedTestCourses } from '@/lib/api/seed-data';
 
 export default function Settings() {
     const { user, logout } = useAuth();
-    const { theme, themeMode, setThemeMode } = useTheme();
+    const { theme, themeMode, setThemeMode, hexColors, isDark } = useTheme();
     const [showThemeModal, setShowThemeModal] = useState(false);
     const [isSeeding, setIsSeeding] = useState(false);
     const [devModeCount, setDevModeCount] = useState(0);
@@ -94,7 +94,7 @@ export default function Settings() {
     };
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <SafeAreaView className="flex-1">
                 <ScrollView
                     className="flex-1 px-4 pt-2"
@@ -118,7 +118,7 @@ export default function Settings() {
                         <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
                             Account
                         </Text>
-                        <View className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                        <View className="rounded-2xl" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border, overflow: 'hidden' }}>
                             <View className="flex-row items-center justify-between p-4 border-b border-border">
                                 <View className="flex-row items-center flex-1">
                                     <View className="w-9 h-9 rounded-lg bg-primary/10 items-center justify-center mr-3">
@@ -148,7 +148,7 @@ export default function Settings() {
                         <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
                             Preferences
                         </Text>
-                        <View className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                        <View className="rounded-2xl" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border, overflow: 'hidden' }}>
                             <TouchableOpacity 
                                 className="flex-row items-center justify-between p-4 border-b border-border"
                                 activeOpacity={0.7}
@@ -208,7 +208,7 @@ export default function Settings() {
                             <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2">
                                 Admin Tools
                             </Text>
-                            <View className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm">
+                            <View className="rounded-2xl" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border, overflow: 'hidden' }}>
                                 <TouchableOpacity 
                                     className="flex-row items-center justify-between p-4"
                                     activeOpacity={0.7}
@@ -257,7 +257,7 @@ export default function Settings() {
                     onPress={() => setShowThemeModal(false)}
                 >
                     <Pressable 
-                        className="bg-card w-full max-w-sm rounded-3xl p-6 shadow-xl border border-border"
+                        className="w-full max-w-sm rounded-3xl p-6 shadow-xl" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}
                         onPress={(e) => e.stopPropagation()}
                     >
                         <Text className="text-xl font-bold text-foreground mb-4 text-center">Choose Theme</Text>

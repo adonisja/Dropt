@@ -16,6 +16,7 @@ interface GradeDistributionChartProps {
 
 export default function GradeDistributionChart({data}: GradeDistributionChartProps) {
     const { width } = useWindowDimensions(); // destructure the window width from the os
+    const { hexColors } = useTheme();
     const CHART_HEIGHT = 200; // Set a max height for the chart
     const PADDING = 20;
     const GRAPH_WIDTH = width - 48; // padding from parent container
@@ -64,8 +65,8 @@ export default function GradeDistributionChart({data}: GradeDistributionChartPro
         const hasData = maxVal > 0;
 
         return (
-            <View className="bg-card rounded-2xl p-4 border border-border shadow-sm">
-                <Text className="text-lg font-bold text-foreground mb-4">Grade Distribution</Text>
+            <View className="rounded-2xl p-4 shadow-sm" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}>
+                <Text className="text-lg font-bold mb-4" style={{ color: hexColors.foreground }}>Grade Distribution</Text>
                 <View style={{ height: 200, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', paddingBottom: 20 }}>
                     {data.map((point, index) => {
                         const heightPercent = hasData ? (point.value / maxVal) * 100 : 20;
@@ -73,7 +74,7 @@ export default function GradeDistributionChart({data}: GradeDistributionChartPro
 
                         return (
                             <View key={index} style={{ alignItems: 'center', flex: 1 }}>
-                                <Text className="text-xs font-semibold text-primary mb-1">
+                                <Text className="text-xs font-semibold mb-1" style={{ color: hexColors.primary }}>
                                     {displayValue}
                                 </Text>
                                 <View style={{
@@ -84,7 +85,7 @@ export default function GradeDistributionChart({data}: GradeDistributionChartPro
                                     minHeight: 10,
                                     opacity: hasData ? 1 : 0.3
                                 }} />
-                                <Text className="text-sm font-medium text-foreground mt-2">{point.label}</Text>
+                                <Text className="text-sm font-medium mt-2" style={{ color: hexColors.foreground }}>{point.label}</Text>
                             </View>
                         );
                     })}
@@ -95,15 +96,15 @@ export default function GradeDistributionChart({data}: GradeDistributionChartPro
 
     if (!isSkiaReady) {
         return (
-            <View className="bg-card rounded-2xl p-4 border border-border shadow-sm h-[200px] items-center justify-center">
-                <Text className="text-muted-foreground">Loading Chart...</Text>
+            <View className="rounded-2xl p-4 shadow-sm h-[200px] items-center justify-center" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}>
+                <Text style={{ color: hexColors.mutedForeground }}>Loading Chart...</Text>
             </View>
         );
     }
 
     return (
-        <View className="bg-card rounded-2xl p-4 border border-border shadow-sm">
-            <Text className="text-lg font-bold text-foreground mb-4">Grade Distribution</Text>
+        <View className="rounded-2xl p-4 shadow-sm" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}>
+            <Text className="text-lg font-bold mb-4" style={{ color: hexColors.foreground }}>Grade Distribution</Text>
 
             <Canvas style={{ width: GRAPH_WIDTH, height: CHART_HEIGHT }}>
                 {data.map((point, index) => {
@@ -127,7 +128,7 @@ export default function GradeDistributionChart({data}: GradeDistributionChartPro
             {/* Labels below the chart */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 8 }}>
                 {data.map((point, index) => (
-                    <Text key={index} className="text-sm font-medium text-foreground" style={{ flex: 1, textAlign: 'center' }}>
+                    <Text key={index} className="text-sm font-medium" style={{ flex: 1, textAlign: 'center', color: hexColors.foreground }}>
                         {point.label}
                     </Text>
                 ))}

@@ -22,7 +22,7 @@ import SuccessScreen from '@/components/SuccessScreen';
 
 export default function EditCourse() {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const { courseId } = useLocalSearchParams<{ courseId: string }>();
 
     const [courseName, setCourseName] = useState('');
@@ -99,9 +99,7 @@ export default function EditCourse() {
                 await performDelete();
             }
         } else {
-            Alert.alert(
-                "Delete Course",
-                "Are you sure you want to delete this course? This action cannot be undone and all associated data (grades, assignments) will be lost.",
+            Alert.alert( "Delete Course", "Are you sure you want to delete this course? This action cannot be undone and all associated data (grades, assignments) will be lost.",
                 [
                     {
                         text: "Cancel",
@@ -156,7 +154,7 @@ export default function EditCourse() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 bg-background justify-center items-center">
+            <View className="flex-1  justify-center items-center" style={{ backgroundColor: hexColors.background }}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
         );
@@ -183,7 +181,7 @@ export default function EditCourse() {
     }
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <SafeAreaView className="flex-1">
                 <View className="px-4 py-2 flex-row items-center border-b border-border/50">
                     <TouchableOpacity 
@@ -192,7 +190,7 @@ export default function EditCourse() {
                     >
                         <Ionicons name="arrow-back" size={24} color={theme.colors.foreground} />
                     </TouchableOpacity>
-                    <Text className="text-lg font-bold text-foreground ml-2">Edit Course Details</Text>
+                    <Text className="text-lg font-bold ml-2">Edit Course Details</Text>
                 </View>
 
                 <KeyboardAvoidingView
@@ -221,17 +219,18 @@ export default function EditCourse() {
                             entering={FadeInDown.delay(100).springify()}
                             className="mb-6"
                         >
-                            <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+                            <Text className="text-sm font-semibold  uppercase tracking-wider mb-3 px-1" style={{ color: hexColors.mutedForeground }}>
                                 Course Information
                             </Text>
                             
-                            <View className="bg-card rounded-xl p-4 border border-border shadow-sm space-y-4">
+                            <View className="rounded-xl p-4 shadow-sm space-y-4" style={{ borderWidth: 1, borderColor: hexColors.border }}>
                                 <View>
-                                    <Text className="text-sm font-medium text-foreground mb-1.5">
+                                    <Text className="text-sm font-medium mb-1.5">
                                         Course Name <Text className="text-destructive">*</Text>
                                     </Text>
                                     <TextInput
-                                        className="bg-background border border-input rounded-lg px-3 py-2.5 text-foreground"
+                                        className="rounded-lg px-3 py-2.5"
+                                        style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.input, color: hexColors.foreground }}
                                         placeholder="e.g., Data Structures"
                                         placeholderTextColor={theme.colors.mutedForeground}
                                         value={courseName}
@@ -240,23 +239,24 @@ export default function EditCourse() {
                                 </View>
 
                                 <View>
-                                    <Text className="text-sm font-medium text-foreground mb-1.5">
+                                    <Text className="text-sm font-medium mb-1.5">
                                         Course ID
                                     </Text>
                                     <View className="bg-muted/30 border border-input rounded-lg px-3 py-2.5">
-                                        <Text className="text-muted-foreground">{courseId}</Text>
+                                        <Text className="text" style={{ color: hexColors.mutedForeground }}>{courseId}</Text>
                                     </View>
-                                    <Text className="text-xs text-muted-foreground mt-1">
+                                    <Text className="text-xs  mt-1" style={{ color: hexColors.mutedForeground }}>
                                         Course ID cannot be changed once created.
                                     </Text>
                                 </View>
 
                                 <View>
-                                    <Text className="text-sm font-medium text-foreground mb-1.5">
+                                    <Text className="text-sm font-medium mb-1.5">
                                         Department
                                     </Text>
                                     <TextInput
-                                        className="bg-background border border-input rounded-lg px-3 py-2.5 text-foreground"
+                                        className="rounded-lg px-3 py-2.5"
+                                        style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.input, color: hexColors.foreground }}
                                         placeholder="e.g., Computer Science"
                                         placeholderTextColor={theme.colors.mutedForeground}
                                         value={department}
@@ -265,11 +265,12 @@ export default function EditCourse() {
                                 </View>
 
                                 <View>
-                                    <Text className="text-sm font-medium text-foreground mb-1.5">
+                                    <Text className="text-sm font-medium mb-1.5">
                                         Passing Grade (%)
                                     </Text>
                                     <TextInput
-                                        className="bg-background border border-input rounded-lg px-3 py-2.5 text-foreground"
+                                        className="rounded-lg px-3 py-2.5"
+                                        style={{ backgroundColor: hexColors.background, borderWidth: 1, borderColor: hexColors.input, color: hexColors.foreground }}
                                         placeholder="e.g., 60"
                                         placeholderTextColor={theme.colors.mutedForeground}
                                         value={passingGrade}
@@ -280,8 +281,8 @@ export default function EditCourse() {
 
                                 <View className="flex-row justify-between items-center pt-2">
                                     <View>
-                                        <Text className="text-base font-medium text-foreground">Required for Major</Text>
-                                        <Text className="text-xs text-muted-foreground">Is this course required for your degree?</Text>
+                                        <Text className="text-base font-medium " style={{ color: hexColors.foreground }}>Required for Major</Text>
+                                        <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>Is this course required for your degree?</Text>
                                     </View>
                                     <Switch
                                         value={isRequired}
@@ -306,11 +307,11 @@ export default function EditCourse() {
                                 }`}
                             >
                                 {isSubmitting ? (
-                                    <Text className="text-muted-foreground font-bold text-lg">Updating Course...</Text>
+                                    <Text className="font-bold text-lg" style={{ color: hexColors.mutedForeground }}>Updating Course...</Text>
                                 ) : (
                                     <>
                                         <Ionicons name="save-outline" size={24} color="white" style={{ marginRight: 8 }} />
-                                        <Text className="text-primary-foreground font-bold text-lg">Save Changes</Text>
+                                        <Text className="-foreground font-bold text-lg" style={{ color: hexColors.primary }}>Save Changes</Text>
                                     </>
                                 )}
                             </TouchableOpacity>

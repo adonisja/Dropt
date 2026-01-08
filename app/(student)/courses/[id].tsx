@@ -44,7 +44,7 @@ interface CategoryBreakdown {
 
 export default function CourseDetails() {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const { id: courseId } = useLocalSearchParams<{ id: string }>();
 
     const [courseData, setCourseData] = useState<CourseWithGrades | null>(null);
@@ -201,10 +201,10 @@ export default function CourseDetails() {
 
     if (isLoading) {
         return (
-            <View className="flex-1 bg-background">
+            <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
                 <View className="flex-1 justify-center items-center p-6">
                     <ActivityIndicator size="large" color={theme.colors.primary} />
-                    <Text className="mt-4 text-base font-medium text-muted-foreground animate-pulse">
+                    <Text className="mt-4 text-base font-medium  animate-pulse" style={{ color: hexColors.mutedForeground }}>
                         Loading course details...
                     </Text>
                 </View>
@@ -214,18 +214,18 @@ export default function CourseDetails() {
 
     if (error || !courseData) {
         return (
-            <View className="flex-1 bg-background">
+            <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
                 <View className="flex-1 justify-center items-center p-8">
                     <View className="w-16 h-16 bg-destructive/10 rounded-full items-center justify-center mb-4">
                         <Ionicons name="alert-circle" size={32} color={theme.colors.destructive} />
                     </View>
-                    <Text className="text-lg font-semibold text-foreground mb-2">Course Not Found</Text>
-                    <Text className="text-sm text-center mb-6 text-muted-foreground leading-5">{error || 'Could not load course data.'}</Text>
+                    <Text className="text-lg font-semibold mb-2">Course Not Found</Text>
+                    <Text className="text-sm text-center mb-6  leading-5" style={{ color: hexColors.mutedForeground }}>{error || 'Could not load course data.'}</Text>
                     <TouchableOpacity
                         className="py-3 px-8 rounded-full bg-primary shadow-lg shadow-primary/30"
                         onPress={() => router.back()}
                     >
-                        <Text className="text-base font-semibold text-primary-foreground">
+                        <Text className="text-base font-semibold  -foreground" style={{ color: hexColors.primary }}>
                             Go Back
                         </Text>
                     </TouchableOpacity>
@@ -357,14 +357,14 @@ export default function CourseDetails() {
     };
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <SafeAreaView className="flex-1">
                 <View className="relative py-2 flex-row justify-center items-center border-b border-border/50">
                     <View className="items-center px-12">
-                        <Text className="text-lg font-bold text-foreground text-center" numberOfLines={1}>
+                        <Text className="text-lg font-bold text-center" numberOfLines={1}>
                             {studentCourse.courseName}
                         </Text>
-                        <Text className="text-xs text-muted-foreground text-center">
+                        <Text className="text-xs  text-center" style={{ color: hexColors.mutedForeground }}>
                             {studentCourse.courseId}
                         </Text>
                     </View>
@@ -394,11 +394,11 @@ export default function CourseDetails() {
                     {/* Current Grade Card */}
                     <Animated.View 
                         entering={FadeInDown.delay(100).springify()}
-                        className="bg-card rounded-2xl p-6 mb-6 border border-border shadow-sm"
+                        className="rounded-2xl p-6 mb-6 borderWidth: 1, borderColor: hexColors.border shadow-sm"
                     >
                         <View className="flex-row justify-between items-start mb-4">
                             <View>
-                                <Text className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                                <Text className="text-sm font-medium  uppercase tracking-wider mb-1" style={{ color: hexColors.mutedForeground }}>
                                     Current Grade
                                 </Text>
                                 {currentGrade !== null ? (
@@ -406,7 +406,7 @@ export default function CourseDetails() {
                                         {currentGrade.toFixed(1)}%
                                     </Text>
                                 ) : (
-                                    <Text className="text-2xl font-bold text-muted-foreground">
+                                    <Text className="text-2xl font-bold " style={{ color: hexColors.mutedForeground }}>
                                         No grades yet
                                     </Text>
                                 )}
@@ -425,13 +425,23 @@ export default function CourseDetails() {
                                         <TouchableOpacity
                                             key={mode}
                                             onPress={() => setAssumptionMode(mode)}
-                                            className={`flex-1 py-1.5 px-2 rounded-md items-center ${
-                                                assumptionMode === mode ? 'bg-background shadow-sm' : ''
-                                            }`}
+                                            className="flex-1 py-1.5 px-2 rounded-md items-center"
+                                            style={{
+                                                backgroundColor: assumptionMode === mode 
+                                                    ? hexColors.primary 
+                                                    : hexColors.background,
+                                                shadowOpacity: assumptionMode === mode ? 0.1 : 0,
+                                                shadowRadius: assumptionMode === mode ? 2 : 0
+                                            }}
                                         >
-                                            <Text className={`text-[10px] font-medium capitalize ${
-                                                assumptionMode === mode ? 'text-primary' : 'text-muted-foreground'
-                                            }`}>
+                                            <Text 
+                                                className="text-[10px] font-medium capitalize"
+                                                style={{ 
+                                                    color: assumptionMode === mode 
+                                                        ? hexColors.primaryForeground 
+                                                        : hexColors.mutedForeground 
+                                                }}
+                                            >
                                                 {mode}
                                             </Text>
                                         </TouchableOpacity>
@@ -514,7 +524,7 @@ export default function CourseDetails() {
 
                         {/* Email Generator Button */}
                         <TouchableOpacity
-                            className="mt-3 bg-secondary py-3 rounded-xl flex-row items-center justify-center shadow-sm border border-border"
+                            className="mt-3 bg-secondary py-3 rounded-xl flex-row items-center justify-center shadow-sm borderWidth: 1, borderColor: hexColors.border"
                             onPress={() => router.push({
                                 pathname: '/(student)/tools/email-generator',
                                 params: { 
@@ -525,7 +535,7 @@ export default function CourseDetails() {
                             })}
                         >
                             <Ionicons name="mail-outline" size={18} color={theme.colors.foreground} style={{ marginRight: 6 }} />
-                            <Text className="text-foreground font-semibold text-sm">Email Professor</Text>
+                            <Text className="font-semibold text-sm" style={{ color: hexColors.foreground }}>Email Professor</Text>
                         </TouchableOpacity>
                     </Animated.View>
 
@@ -534,32 +544,32 @@ export default function CourseDetails() {
                         entering={FadeInDown.delay(200).springify()}
                         className="mb-6"
                     >
-                        <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+                        <Text className="text-sm font-semibold  uppercase tracking-wider mb-3 px-1" style={{ color: hexColors.mutedForeground }}>
                             Grade Breakdown
                         </Text>
                         
                         {categoryBreakdowns.map((cat, index) => (
                             <View 
                                 key={index}
-                                className="bg-card rounded-xl p-4 mb-3 border border-border shadow-sm"
+                                className="rounded-xl p-4 mb-3 borderWidth: 1, borderColor: hexColors.border shadow-sm"
                             >
                                 <View className="flex-row justify-between items-center mb-2">
                                     <View className="flex-row items-center">
                                         <View className="w-2 h-8 rounded-full bg-primary mr-3" />
                                         <View>
-                                            <Text className="text-base font-bold text-foreground">
+                                            <Text className="text-base font-bold " style={{ color: hexColors.foreground }}>
                                                 {cat.category}
                                             </Text>
-                                            <Text className="text-xs text-muted-foreground">
+                                            <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>
                                                 Weight: {cat.weight}% {cat.dropLowest ? `• Drop Lowest: ${cat.dropLowest}` : ''}
                                             </Text>
                                         </View>
                                     </View>
                                     <View className="items-end">
-                                        <Text className="text-lg font-bold text-foreground">
+                                        <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>
                                             {cat.earnedPercentage !== null ? `${cat.earnedPercentage.toFixed(1)}%` : '--'}
                                         </Text>
-                                        <Text className="text-xs text-muted-foreground">
+                                        <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>
                                             {cat.earnedPoints.toFixed(1)} / {cat.totalPoints} pts
                                         </Text>
                                     </View>
@@ -585,7 +595,7 @@ export default function CourseDetails() {
                         className="mb-8"
                     >
                         <View className="flex-row justify-between items-center mb-3 px-1">
-                            <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            <Text className="text-sm font-semibold  uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>
                                 Assignments
                             </Text>
                             <TouchableOpacity 
@@ -596,27 +606,27 @@ export default function CourseDetails() {
                                 className="flex-row items-center"
                             >
                                 <Ionicons name="add" size={16} color={theme.colors.primary} />
-                                <Text className="text-sm font-bold text-primary ml-1">Add New</Text>
+                                <Text className="text-sm font-bold  ml-1" style={{ color: hexColors.primary }}>Add New</Text>
                             </TouchableOpacity>
                         </View>
 
                         {assignments.length === 0 ? (
-                            <View className="bg-card rounded-xl p-8 items-center border border-dashed border-border">
+                            <View className="rounded-xl p-8 items-center border border-dashed border-border">
                                 <Ionicons name="document-text-outline" size={32} color={theme.colors.mutedForeground} />
-                                <Text className="text-muted-foreground mt-2 text-center">
+                                <Text className="mt-2 text-center" style={{ color: hexColors.mutedForeground }}>
                                     No assignments added yet.
                                 </Text>
                             </View>
                         ) : (
                             Object.entries(assignmentsByCategory).map(([category, categoryAssignments]) => (
                                 <View key={category} className="mb-4">
-                                    <Text className="text-xs font-bold text-primary mb-2 ml-1 uppercase">
+                                    <Text className="text-xs font-bold  mb-2 ml-1 uppercase" style={{ color: hexColors.primary }}>
                                         {category}
                                     </Text>
                                     {categoryAssignments.map((assignment, idx) => (
                                         <View 
                                             key={idx}
-                                            className="bg-card rounded-xl mb-2 border border-border flex-row items-center overflow-hidden"
+                                            className="rounded-xl mb-2 borderWidth: 1, borderColor: hexColors.border flex-row items-center overflow-hidden"
                                         >
                                             <TouchableOpacity
                                                 className="flex-1 p-4 flex-row justify-between items-center"
@@ -629,25 +639,25 @@ export default function CourseDetails() {
                                                 })}
                                             >
                                                 <View className="flex-1 mr-4">
-                                                    <Text className="text-base font-medium text-foreground mb-1">
+                                                    <Text className="text-base font-medium mb-1">
                                                         {assignment.assignmentName}
                                                     </Text>
-                                                    <Text className="text-xs text-muted-foreground">
+                                                    <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>
                                                         Max Score: {assignment.maxScore}
                                                     </Text>
                                                 </View>
                                                 <View className="items-end">
                                                     {assignment.scoreEarned != null ? (
                                                         <>
-                                                            <Text className="text-lg font-bold text-foreground">
+                                                            <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>
                                                                 {assignment.scoreEarned}
                                                             </Text>
-                                                            <Text className="text-xs text-muted-foreground">
+                                                            <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>
                                                                 {((assignment.scoreEarned / assignment.maxScore) * 100).toFixed(0)}%
                                                             </Text>
                                                         </>
                                                     ) : (
-                                                        <Text className="text-sm text-muted-foreground italic">
+                                                        <Text className="text-sm  italic" style={{ color: hexColors.mutedForeground }}>
                                                             --
                                                         </Text>
                                                     )}
@@ -674,7 +684,7 @@ export default function CourseDetails() {
                             className="mb-8"
                         >
                             <View className="flex-row justify-between items-center mb-3 px-1">
-                                <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                                <Text className="text-sm font-semibold  uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>
                                     Course Assessment
                                 </Text>
                                 <TouchableOpacity onPress={handleDeleteAssessment}>
@@ -682,19 +692,19 @@ export default function CourseDetails() {
                                 </TouchableOpacity>
                             </View>
                             
-                            <View className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                            <View className="rounded-xl p-4 borderWidth: 1, borderColor: hexColors.border shadow-sm">
                                 {studentCourse.stressLevel != null && (
                                     <View className="flex-row justify-between items-center py-3 border-b border-border/50">
                                         <View className="flex-row items-center">
                                             <Ionicons name="pulse" size={18} color={theme.colors.mutedForeground} style={{ marginRight: 8 }} />
-                                            <Text className="text-foreground">Stress Level</Text>
+                                            <Text className="text" style={{ color: hexColors.foreground }}>Stress Level</Text>
                                         </View>
                                         <View className="flex-row items-center">
                                             <View 
                                                 className="w-3 h-3 rounded-full mr-2" 
                                                 style={{ backgroundColor: getStressColor(studentCourse.stressLevel) }} 
                                             />
-                                            <Text className="font-bold text-foreground">{studentCourse.stressLevel}/10</Text>
+                                            <Text className="font-bold " style={{ color: hexColors.foreground }}>{studentCourse.stressLevel}/10</Text>
                                         </View>
                                     </View>
                                 )}
@@ -703,9 +713,9 @@ export default function CourseDetails() {
                                     <View className="flex-row justify-between items-center py-3 border-b border-border/50">
                                         <View className="flex-row items-center">
                                             <Ionicons name="time-outline" size={18} color={theme.colors.mutedForeground} style={{ marginRight: 8 }} />
-                                            <Text className="text-foreground">Weekly Time</Text>
+                                            <Text className="text" style={{ color: hexColors.foreground }}>Weekly Time</Text>
                                         </View>
-                                        <Text className="font-bold text-foreground">{studentCourse.weeklyTimeInvestment} hours</Text>
+                                        <Text className="font-bold " style={{ color: hexColors.foreground }}>{studentCourse.weeklyTimeInvestment} hours</Text>
                                     </View>
                                 )}
 
@@ -713,9 +723,9 @@ export default function CourseDetails() {
                                     <View className="flex-row justify-between items-center py-3">
                                         <View className="flex-row items-center">
                                             <Ionicons name="happy-outline" size={18} color={theme.colors.mutedForeground} style={{ marginRight: 8 }} />
-                                            <Text className="text-foreground">Wellbeing Impact</Text>
+                                            <Text className="text" style={{ color: hexColors.foreground }}>Wellbeing Impact</Text>
                                         </View>
-                                        <Text className="font-bold text-foreground">{studentCourse.overallWellbeing}/10</Text>
+                                        <Text className="font-bold " style={{ color: hexColors.foreground }}>{studentCourse.overallWellbeing}/10</Text>
                                     </View>
                                 )}
                             </View>

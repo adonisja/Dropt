@@ -6,7 +6,7 @@ import { useTheme } from '@/lib/theme/theme-context';
 
 export const HeaderProfileBtn = () => {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors } = useTheme();
     
     return (
         <TouchableOpacity 

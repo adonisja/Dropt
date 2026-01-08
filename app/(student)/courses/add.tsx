@@ -26,7 +26,7 @@ const DEFAULT_CATEGORIES: CategoryInput[] = [
 
 export default function AddCourse() {
     const { user } = useAuth();
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     // Parse for pre-filled data from OCR
     const params = useLocalSearchParams<{ 
         prefillCourseName?: string;
@@ -257,7 +257,7 @@ export default function AddCourse() {
     }
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <SafeAreaView className="flex-1">
                 <View className="px-4 py-2 flex-row items-center border-b border-border/50">
                     <TouchableOpacity 
@@ -266,7 +266,7 @@ export default function AddCourse() {
                     >
                         <Ionicons name="arrow-back" size={24} color={theme.colors.foreground} />
                     </TouchableOpacity>
-                    <Text className="text-lg font-bold text-foreground ml-2">Add New Course</Text>
+                    <Text className="text-lg font-bold ml-2">Add New Course</Text>
                 </View>
 
                 <KeyboardAvoidingView
@@ -292,12 +292,12 @@ export default function AddCourse() {
 
                         {/* Course Info Section */}
                         <View className="mb-6">
-                            <Text className="text-sm font-medium text-muted-foreground mb-2 ml-1">Course Information</Text>
-                            <View className="bg-card border border-border rounded-xl overflow-hidden">
+                            <Text className="text-sm font-medium  mb-2 ml-1" style={{ color: hexColors.mutedForeground }}>Course Information</Text>
+                            <View className="borderWidth: 1, borderColor: hexColors.border rounded-xl overflow-hidden" style={{ backgroundColor: hexColors.card }}>
                                 <View className="p-4 border-b border-border">
-                                    <Text className="text-xs text-muted-foreground mb-1">Course Name</Text>
+                                    <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Course Name</Text>
                                     <TextInput
-                                        className="text-base text-foreground font-medium h-6 p-0"
+                                        className="text-base font-medium h-6 p-0"
                                         placeholder="e.g. Introduction to Computer Science"
                                         placeholderTextColor={theme.colors.mutedForeground}
                                         value={courseName}
@@ -306,9 +306,9 @@ export default function AddCourse() {
                                 </View>
                                 <View className="flex-row border-b border-border">
                                     <View className="flex-1 p-4 border-r border-border">
-                                        <Text className="text-xs text-muted-foreground mb-1">Course ID</Text>
+                                        <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Course ID</Text>
                                         <TextInput
-                                            className="text-base text-foreground font-medium h-6 p-0"
+                                            className="text-base font-medium h-6 p-0"
                                             placeholder="e.g. CS 101"
                                             placeholderTextColor={theme.colors.mutedForeground}
                                             value={courseId}
@@ -317,9 +317,9 @@ export default function AddCourse() {
                                         />
                                     </View>
                                     <View className="flex-1 p-4">
-                                        <Text className="text-xs text-muted-foreground mb-1">Department (Optional)</Text>
+                                        <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Department (Optional)</Text>
                                         <TextInput
-                                            className="text-base text-foreground font-medium h-6 p-0"
+                                            className="text-base font-medium h-6 p-0"
                                             placeholder="e.g. CS"
                                             placeholderTextColor={theme.colors.mutedForeground}
                                             value={department}
@@ -330,8 +330,8 @@ export default function AddCourse() {
                                 </View>
                                 <View className="p-4 flex-row items-center justify-between">
                                     <View>
-                                        <Text className="text-base font-medium text-foreground">Required Course</Text>
-                                        <Text className="text-xs text-muted-foreground">Is this course required for your major?</Text>
+                                        <Text className="text-base font-medium " style={{ color: hexColors.foreground }}>Required Course</Text>
+                                        <Text className="text-xs " style={{ color: hexColors.mutedForeground }}>Is this course required for your major?</Text>
                                     </View>
                                     <Switch
                                         value={isRequired}
@@ -340,9 +340,10 @@ export default function AddCourse() {
                                     />
                                 </View>
                                 <View className="p-4 border-b border-border">
-                                    <Text className="text-xs text-muted-foreground mb-1">Passing Grade (%)</Text>
+                                    <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Passing Grade (%)</Text>
                                     <TextInput
-                                        className="text-base text-foreground font-medium h-6 p-0"
+                                        className="text-base font-medium h-6 p-0"
+                                        style={{ color: hexColors.foreground }}
                                         placeholder="60"
                                         placeholderTextColor={theme.colors.mutedForeground}
                                         value={passingGrade}
@@ -355,12 +356,12 @@ export default function AddCourse() {
                         </View>
 
                         <View className="mb-6">
-                            <Text className="text-sm font-medium text-muted-foreground mb-2 ml-1">Instructor & Schedule (Optional)</Text>
-                            <View className="bg-card border border-border rounded-xl overflow-hidden">
+                            <Text className="text-sm font-medium  mb-2 ml-1" style={{ color: hexColors.mutedForeground }}>Instructor & Schedule (Optional)</Text>
+                            <View className="borderWidth: 1, borderColor: hexColors.border rounded-xl overflow-hidden" style={{ backgroundColor: hexColors.card }}>
                                 <View className="p-4 border-b border-border">
-                                    <Text className="text-xs text-muted-foreground mb-1">Instructor Name</Text>
+                                    <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Instructor Name</Text>
                                     <TextInput
-                                        className="text-base text-foreground font-medium h-6 p-0"
+                                        className="text-base font-medium h-6 p-0"
                                         placeholder="e.g. Dr. Smith"
                                         placeholderTextColor={theme.colors.mutedForeground}
                                         value={instructor}
@@ -368,9 +369,9 @@ export default function AddCourse() {
                                     />
                                 </View>
                                 <View className="p-4 border-b border-border">
-                                    <Text className="text-xs text-muted-foreground mb-1">Instructor Email</Text>
+                                    <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Instructor Email</Text>
                                     <TextInput
-                                        className="text-base text-foreground font-medium h-6 p-0"
+                                        className="text-base font-medium h-6 p-0"
                                         placeholder="e.g. smith@university.edu"
                                         placeholderTextColor={theme.colors.mutedForeground}
                                         value={instructorEmail}
@@ -380,9 +381,9 @@ export default function AddCourse() {
                                     />
                                 </View>
                                 <View className="p-4 border-b border-border">
-                                    <Text className="text-xs text-muted-foreground mb-1">Office Hours</Text>
+                                    <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Office Hours</Text>
                                     <TextInput
-                                        className="text-base text-foreground font-medium h-6 p-0"
+                                        className="text-base font-medium h-6 p-0"
                                         placeholder="e.g. Mon/Wed 2-4 PM"
                                         placeholderTextColor={theme.colors.mutedForeground}
                                         value={officeHours}
@@ -391,9 +392,9 @@ export default function AddCourse() {
                                 </View>
                                 <View className="flex-row">
                                     <View className="flex-1 p-4 border-r border-border">
-                                        <Text className="text-xs text-muted-foreground mb-1">Class Days</Text>
+                                        <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Class Days</Text>
                                         <TextInput
-                                            className="text-base text-foreground font-medium h-6 p-0"
+                                            className="text-base font-medium h-6 p-0"
                                             placeholder="e.g. Mon, Wed"
                                             placeholderTextColor={theme.colors.mutedForeground}
                                             value={classDays}
@@ -401,9 +402,9 @@ export default function AddCourse() {
                                         />
                                     </View>
                                     <View className="flex-1 p-4">
-                                        <Text className="text-xs text-muted-foreground mb-1">Time</Text>
+                                        <Text className="text-xs  mb-1" style={{ color: hexColors.mutedForeground }}>Time</Text>
                                         <TextInput
-                                            className="text-base text-foreground font-medium h-6 p-0"
+                                            className="text-base font-medium h-6 p-0"
                                             placeholder="e.g. 10:00 AM"
                                             placeholderTextColor={theme.colors.mutedForeground}
                                             value={classTime}
@@ -420,7 +421,7 @@ export default function AddCourse() {
                             className="mb-8"
                         >
                             <View className="flex-row justify-between items-center mb-3 px-1">
-                                <Text className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                                <Text className="text-sm font-semibold  uppercase tracking-wider" style={{ color: hexColors.mutedForeground }}>
                                     Grade Categories
                                 </Text>
                                 <View className={`px-2 py-1 rounded-md ${isWeightValid ? 'bg-green-500/10' : 'bg-destructive/10'}`}>
@@ -430,11 +431,11 @@ export default function AddCourse() {
                                 </View>
                             </View>
 
-                            <View className="bg-card rounded-xl p-4 border border-border shadow-sm">
+                            <View className="rounded-xl p-4 borderWidth: 1, borderColor: hexColors.border shadow-sm">
                                 <View className="flex-row items-center mb-2 px-1">
-                                    <Text className="text-xs font-bold text-muted-foreground uppercase flex-1">Category Name</Text>
-                                    <Text className="text-xs font-bold text-muted-foreground uppercase w-20 text-center">Weight %</Text>
-                                    <Text className="text-xs font-bold text-muted-foreground uppercase w-16 text-center">Drop</Text>
+                                    <Text className="text-xs font-bold  uppercase flex-1" style={{ color: hexColors.mutedForeground }}>Category Name</Text>
+                                    <Text className="text-xs font-bold  uppercase w-20 text-center" style={{ color: hexColors.mutedForeground }}>Weight %</Text>
+                                    <Text className="text-xs font-bold  uppercase w-16 text-center" style={{ color: hexColors.mutedForeground }}>Drop</Text>
                                     {categories.length > 1 && <View className="w-8" />}
                                 </View>
 
@@ -442,14 +443,14 @@ export default function AddCourse() {
                                     <View key={index} className="mb-3 last:mb-0">
                                         <View className="flex-row items-start gap-2">
                                             <TextInput
-                                                className="flex-1 bg-background border border-input rounded-lg px-3 py-2.5 text-foreground"
+                                                className="flex-1  border border-input rounded-lg px-3 py-2.5 " style={{ color: hexColors.foreground }}
                                                 placeholder="e.g. Homework"
                                                 placeholderTextColor={theme.colors.mutedForeground}
                                                 value={cat.category}
                                                 onChangeText={(value) => updateCategory(index, 'category', value)}
                                             />
                                             <TextInput
-                                                className="w-20 bg-background border border-input rounded-lg px-3 py-2.5 text-foreground text-center"
+                                                className="w-20  border border-input rounded-lg px-3 py-2.5 text-center" style={{ backgroundColor: hexColors.background }}
                                                 placeholder="0"
                                                 placeholderTextColor={theme.colors.mutedForeground}
                                                 value={cat.weight}
@@ -457,7 +458,7 @@ export default function AddCourse() {
                                                 keyboardType="numeric"
                                             />
                                             <TextInput
-                                                className="w-16 bg-background border border-input rounded-lg px-3 py-2.5 text-foreground text-center"
+                                                className="w-16  border border-input rounded-lg px-3 py-2.5 text-center" style={{ backgroundColor: hexColors.background }}
                                                 placeholder="0"
                                                 placeholderTextColor={theme.colors.mutedForeground}
                                                 value={cat.dropLowest}
@@ -481,7 +482,7 @@ export default function AddCourse() {
                                     className="mt-4 flex-row items-center justify-center py-3 border border-dashed border-primary/50 rounded-lg active:bg-primary/5"
                                 >
                                     <Ionicons name="add-circle-outline" size={20} color={theme.colors.primary} />
-                                    <Text className="ml-2 font-semibold text-primary">Add Category</Text>
+                                    <Text className="ml-2 font-semibold " style={{ color: hexColors.primary }}>Add Category</Text>
                                 </TouchableOpacity>
                             </View>
                         </Animated.View>
@@ -499,11 +500,11 @@ export default function AddCourse() {
                                 }`}
                             >
                                 {isSubmitting ? (
-                                    <Text className="text-muted-foreground font-bold text-lg">Creating Course...</Text>
+                                    <Text className="font-bold text-lg" style={{ color: hexColors.mutedForeground }}>Creating Course...</Text>
                                 ) : (
                                     <>
                                         <Ionicons name="checkmark-circle" size={24} color="white" style={{ marginRight: 8 }} />
-                                        <Text className="text-primary-foreground font-bold text-lg">Create Course</Text>
+                                        <Text className="-foreground font-bold text-lg" style={{ color: hexColors.primary }}>Create Course</Text>
                                     </>
                                 )}
                             </TouchableOpacity>
@@ -513,7 +514,7 @@ export default function AddCourse() {
                                 disabled={isSubmitting}
                                 className="w-full py-4 mt-3 rounded-xl flex-row items-center justify-center active:bg-secondary/50"
                             >
-                                <Text className="text-muted-foreground font-semibold text-lg">Cancel</Text>
+                                <Text className="font-semibold text-lg" style={{ color: hexColors.mutedForeground }}>Cancel</Text>
                             </TouchableOpacity>
                         </Animated.View>
                     </ScrollView>

@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/lib/theme/theme-context';
 import { useAuth } from '@/lib/auth/auth-context';
 import { fetchStudentCourses, fetchResources, createResource, deleteResource } from '@/lib/api/data-client';
+import { detectCurrentSemester } from '@/lib/utils/semester-utils';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import PlatformButton from '@/components/PlatformButton';
 
@@ -25,7 +26,7 @@ interface Resource {
 }
 
 export default function ResourceHub() {
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const { user } = useAuth();
     
     const [courses, setCourses] = useState<Course[]>([]);
@@ -55,8 +56,13 @@ export default function ResourceHub() {
     const loadCourses = async () => {
         if (!user?.id) return;
         try {
+            const { semester, year } = detectCurrentSemester();
             const data = await fetchStudentCourses(user.id);
-            const courseList = data.map(c => ({ courseId: c.courseId, courseName: c.courseName }));
+            // Filter to only show current semester courses
+            const currentSemesterCourses = data.filter(c => 
+                c.semester === semester && c.year === year
+            );
+            const courseList = currentSemesterCourses.map(c => ({ courseId: c.courseId, courseName: c.courseName }));
             setCourses(courseList);
             if (courseList.length > 0) {
                 setSelectedCourseId(courseList[0].courseId);
@@ -171,18 +177,19 @@ export default function ResourceHub() {
     };
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <Stack.Screen options={{ headerShown: false }} />
             <SafeAreaView className="flex-1">
                 {/* Header */}
                 <View className="px-4 py-3 border-b border-border flex-row items-center justify-between">
                     <TouchableOpacity 
                         onPress={() => router.back()}
-                        className="w-10 h-10 rounded-full bg-secondary items-center justify-center"
+                        className="w-10 h-10 rounded-full items-center justify-center"
+                        style={{ backgroundColor: hexColors.secondary }}
                     >
-                        <Ionicons name="arrow-back" size={24} color={theme.colors.foreground} />
+                        <Ionicons name="arrow-back" size={24} color={hexColors.foreground} />
                     </TouchableOpacity>
-                    <Text className="text-lg font-bold text-foreground">Resource Hub</Text>
+                    <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>Resource Hub</Text>
                     <TouchableOpacity 
                         onPress={() => setIsModalVisible(true)}
                         className="w-10 h-10 rounded-full bg-primary items-center justify-center"
@@ -199,15 +206,17 @@ export default function ResourceHub() {
                                 <TouchableOpacity
                                     key={course.courseId}
                                     onPress={() => setSelectedCourseId(course.courseId)}
-                                    className={`mr-3 px-4 py-2 rounded-full border ${
-                                        selectedCourseId === course.courseId
-                                            ? 'bg-primary border-primary'
-                                            : 'bg-card border-border'
-                                    }`}
+                                    className="mr-3 px-4 py-2 rounded-full"
+                                    style={{
+                                        backgroundColor: selectedCourseId === course.courseId ? hexColors.primary : hexColors.card,
+                                        borderWidth: 1,
+                                        borderColor: selectedCourseId === course.courseId ? hexColors.primary : hexColors.border
+                                    }}
                                 >
-                                    <Text className={`font-medium ${
-                                        selectedCourseId === course.courseId ? 'text-white' : 'text-foreground'
-                                    }`}>
+                                    <Text 
+                                        className="font-medium"
+                                        style={{ color: selectedCourseId === course.courseId ? '#FFFFFF' : hexColors.foreground }}
+                                    >
                                         {course.courseName}
                                     </Text>
                                 </TouchableOpacity>
@@ -222,8 +231,8 @@ export default function ResourceHub() {
                                 <View className="w-20 h-20 bg-secondary/50 rounded-full items-center justify-center mb-4">
                                     <Ionicons name="library-outline" size={40} color={theme.colors.mutedForeground} />
                                 </View>
-                                <Text className="text-muted-foreground text-center font-medium">No resources yet</Text>
-                                <Text className="text-muted-foreground text-center text-xs mt-1">
+                                <Text className="text-center font-medium" style={{ color: hexColors.mutedForeground }}>No resources yet</Text>
+                                <Text className="text-center text-xs mt-1" style={{ color: hexColors.mutedForeground }}>
                                     Add links or notes for this course
                                 </Text>
                             </View>
@@ -235,7 +244,7 @@ export default function ResourceHub() {
                                     className="mb-3"
                                 >
                                     <TouchableOpacity
-                                        className="bg-card p-4 rounded-2xl border border-border shadow-sm"
+                                        className="p-4 rounded-2xl borderWidth: 1, borderColor: hexColors.border shadow-sm" style={{ backgroundColor: hexColors.card }}
                                         onPress={() => resource.type === 'link' && resource.url ? openLink(resource.url) : null}
                                         activeOpacity={resource.type === 'link' ? 0.7 : 1}
                                     >
@@ -251,11 +260,11 @@ export default function ResourceHub() {
                                                     />
                                                 </View>
                                                 <View className="flex-1">
-                                                    <Text className="text-base font-bold text-foreground mb-1">{resource.title}</Text>
+                                                    <Text className="text-base font-bold mb-1">{resource.title}</Text>
                                                     {resource.type === 'link' ? (
                                                         <Text className="text-xs text-blue-500" numberOfLines={1}>{resource.url}</Text>
                                                     ) : (
-                                                        <Text className="text-sm text-muted-foreground" numberOfLines={3}>{resource.content}</Text>
+                                                        <Text className="text-sm " style={{ color: hexColors.mutedForeground }} numberOfLines={3}>{resource.content}</Text>
                                                     )}
                                                 </View>
                                             </View>
@@ -290,9 +299,9 @@ export default function ResourceHub() {
                                 className="flex-1" 
                                 onPress={() => setIsModalVisible(false)} 
                             />
-                            <View className="bg-card rounded-t-3xl p-6 border-t border-border">
+                            <View className="rounded-t-3xl p-6 border-t border-border">
                                 <View className="flex-row justify-between items-center mb-6">
-                                    <Text className="text-xl font-bold text-foreground">Add Resource</Text>
+                                    <Text className="text-xl font-bold " style={{ color: hexColors.foreground }}>Add Resource</Text>
                                     <TouchableOpacity onPress={() => setIsModalVisible(false)}>
                                         <Ionicons name="close" size={24} color={theme.colors.mutedForeground} />
                                     </TouchableOpacity>
@@ -301,22 +310,22 @@ export default function ResourceHub() {
                                 {/* Type Selector */}
                                 <View className="flex-row bg-secondary/30 p-1 rounded-xl mb-4">
                                     <TouchableOpacity 
-                                        className={`flex-1 py-2 rounded-lg items-center ${newResourceType === 'link' ? 'bg-background shadow-sm' : ''}`}
+                                        className={`flex-1 py-2 rounded-lg items-center ${newResourceType === 'link' ? ' shadow-sm' : ''}`} style={{ backgroundColor: hexColors.background }}
                                         onPress={() => setNewResourceType('link')}
                                     >
                                         <Text className={`font-medium ${newResourceType === 'link' ? 'text-foreground' : 'text-muted-foreground'}`}>Link</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity 
-                                        className={`flex-1 py-2 rounded-lg items-center ${newResourceType === 'note' ? 'bg-background shadow-sm' : ''}`}
+                                        className={`flex-1 py-2 rounded-lg items-center ${newResourceType === 'note' ? ' shadow-sm' : ''}`} style={{ backgroundColor: hexColors.background }}
                                         onPress={() => setNewResourceType('note')}
                                     >
                                         <Text className={`font-medium ${newResourceType === 'note' ? 'text-foreground' : 'text-muted-foreground'}`}>Note</Text>
                                     </TouchableOpacity>
                                 </View>
 
-                                <Text className="text-sm font-medium text-muted-foreground mb-2">Title</Text>
+                                <Text className="text-sm font-medium  mb-2" style={{ color: hexColors.mutedForeground }}>Title</Text>
                                 <TextInput
-                                    className="bg-secondary/30 p-4 rounded-xl text-foreground mb-4"
+                                    className="bg-secondary/30 p-4 rounded-xl mb-4"
                                     placeholder="e.g. Lecture Slides, Study Guide"
                                     placeholderTextColor={theme.colors.mutedForeground}
                                     value={newTitle}
@@ -325,9 +334,9 @@ export default function ResourceHub() {
 
                                 {newResourceType === 'link' ? (
                                     <>
-                                        <Text className="text-sm font-medium text-muted-foreground mb-2">URL</Text>
+                                        <Text className="text-sm font-medium  mb-2" style={{ color: hexColors.mutedForeground }}>URL</Text>
                                         <TextInput
-                                            className="bg-secondary/30 p-4 rounded-xl text-foreground mb-6"
+                                            className="bg-secondary/30 p-4 rounded-xl mb-6"
                                             placeholder="https://..."
                                             placeholderTextColor={theme.colors.mutedForeground}
                                             value={newUrl}
@@ -338,9 +347,9 @@ export default function ResourceHub() {
                                     </>
                                 ) : (
                                     <>
-                                        <Text className="text-sm font-medium text-muted-foreground mb-2">Content</Text>
+                                        <Text className="text-sm font-medium  mb-2" style={{ color: hexColors.mutedForeground }}>Content</Text>
                                         <TextInput
-                                            className="bg-secondary/30 p-4 rounded-xl text-foreground mb-6 min-h-[100px]"
+                                            className="bg-secondary/30 p-4 rounded-xl mb-6 min-h-[100px]"
                                             placeholder="Type your note here..."
                                             placeholderTextColor={theme.colors.mutedForeground}
                                             value={newContent}

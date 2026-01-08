@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { fetchStudentCourses, fetchCompleteCourseData, transformToStudentCourseData } from '@/lib/api/data-client';
 import { calculateCurrentGrade } from '@/lib/logic/calculateCurrentGrade';
 import { calculateSemesterGPA } from '@/lib/logic/calculateGPA';
+import { detectCurrentSemester } from '@/lib/utils/semester-utils';
 
 // Mock data for the chart
 const MOCK_GRADE_DISTRIBUTION = [
@@ -25,7 +26,7 @@ interface GradeDistribution {
 }
 
 export default function Analytics() {
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const [ gradeData, setGradeData ] = useState<GradeDistribution[]>([]);
     const [ stressData, setStressData ] = useState<{courseName: string, stress: number}[]>([]);
     const [ currentGPA, setCurrentGPA ] = useState<number>(0);
@@ -38,7 +39,12 @@ export default function Analytics() {
 
             try {
                 setIsLoading(true);
-                const studentCourses = await fetchStudentCourses(user.id);
+                const { semester, year } = detectCurrentSemester();
+                const allCourses = await fetchStudentCourses(user.id);
+                // Filter to only show current semester courses
+                const studentCourses = allCourses.filter(c => 
+                    c.semester === semester && c.year === year
+                );
                 
                 if (studentCourses.length === 0) {
                     setGradeData([]);
@@ -97,7 +103,7 @@ export default function Analytics() {
     const hasData = gradeData.some(d => d.value > 0);
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <SafeAreaView className="flex-1">
                 <ScrollView 
                     className="flex-1 px-4 pt-2"
@@ -105,8 +111,8 @@ export default function Analytics() {
                     showsVerticalScrollIndicator={false}
                 >
                     <View className="px-2 pt-4 pb-6">
-                        <Text className="text-3xl font-bold text-foreground mb-1">Analytics</Text>
-                        <Text className="text-base text-muted-foreground">
+                        <Text className="text-3xl font-bold mb-1">Analytics</Text>
+                        <Text className="text-base " style={{ color: hexColors.mutedForeground }}>
                             Performance Overview
                         </Text>
                     </View>
@@ -114,11 +120,11 @@ export default function Analytics() {
                     {/* GPA Card */}
                     <Animated.View 
                         entering={FadeInDown.delay(100).springify()}
-                        className="bg-card rounded-2xl p-6 mb-6 border border-border shadow-sm flex-row items-center justify-between"
+                        className="rounded-2xl p-6 mb-6 borderWidth: 1, borderColor: hexColors.border shadow-sm flex-row items-center justify-between"
                     >
                         <View>
-                            <Text className="text-sm text-muted-foreground mb-1">Semester GPA</Text>
-                            <Text className="text-4xl font-bold text-primary">{currentGPA.toFixed(2)}</Text>
+                            <Text className="text-sm  mb-1" style={{ color: hexColors.mutedForeground }}>Semester GPA</Text>
+                            <Text className="text-4xl font-bold " style={{ color: hexColors.primary }}>{currentGPA.toFixed(2)}</Text>
                         </View>
                         <View className="w-16 h-16 rounded-full bg-primary/10 items-center justify-center">
                             <Ionicons name="school" size={32} color={theme.colors.primary} />
@@ -131,8 +137,8 @@ export default function Analytics() {
                         className="mb-6"
                     >
                         {isLoading ? (
-                            <View className="bg-card rounded-2xl p-4 border border-border shadow-sm h-[200px] items-center justify-center">
-                                <Text className="text-muted-foreground">Loading chart...</Text>
+                            <View className="rounded-2xl p-4 borderWidth: 1, borderColor: hexColors.border shadow-sm h-[200px] items-center justify-center">
+                                <Text className="text" style={{ color: hexColors.mutedForeground }}>Loading chart...</Text>
                             </View>
                         ) : (
                             <GradeDistributionChart data={hasData ? gradeData : MOCK_GRADE_DISTRIBUTION} />
@@ -142,19 +148,19 @@ export default function Analytics() {
                     {/* Stress Levels */}
                     <Animated.View 
                         entering={FadeInDown.delay(300).springify()}
-                        className="bg-card rounded-2xl p-6 mb-4 border border-border shadow-sm"
+                        className="rounded-2xl p-6 mb-4 borderWidth: 1, borderColor: hexColors.border shadow-sm"
                     >
                         <View className="flex-row items-center mb-4">
                             <Ionicons name="pulse" size={24} color="#EF4444" className="mr-2" />
-                            <Text className="text-lg font-bold text-foreground ml-2">Stress Levels</Text>
+                            <Text className="text-lg font-bold ml-2">Stress Levels</Text>
                         </View>
                         
                         {stressData.length > 0 ? (
                             stressData.map((item, index) => (
                                 <View key={index} className="mb-4 last:mb-0">
                                     <View className="flex-row justify-between mb-1">
-                                        <Text className="text-sm font-medium text-foreground">{item.courseName}</Text>
-                                        <Text className="text-sm text-muted-foreground">{item.stress}/10</Text>
+                                        <Text className="text-sm font-medium " style={{ color: hexColors.foreground }}>{item.courseName}</Text>
+                                        <Text className="text-sm " style={{ color: hexColors.mutedForeground }}>{item.stress}/10</Text>
                                     </View>
                                     <View className="h-2 bg-secondary rounded-full overflow-hidden">
                                         <View 
@@ -168,7 +174,7 @@ export default function Analytics() {
                                 </View>
                             ))
                         ) : (
-                            <Text className="text-muted-foreground text-center py-4">No stress data available yet.</Text>
+                            <Text className="text-center py-4" style={{ color: hexColors.mutedForeground }}>No stress data available yet.</Text>
                         )}
                     </Animated.View>
                 </ScrollView>

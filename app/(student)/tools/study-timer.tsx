@@ -16,11 +16,11 @@ const MODES: Record<TimerMode, { label: string, minutes: number, color: string, 
 };
 
 export default function StudyTimer() {
-    const { theme } = useTheme();
+    const { theme, hexColors, isDark } = useTheme();
     const [mode, setMode] = useState<TimerMode>('focus');
     const [timeLeft, setTimeLeft] = useState(MODES['focus'].minutes * 60);
     const [isActive, setIsActive] = useState(false);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // Animation values
     const progress = useSharedValue(1);
@@ -87,42 +87,46 @@ export default function StudyTimer() {
     });
 
     return (
-        <View className="flex-1 bg-background">
+        <View className="flex-1" style={{ backgroundColor: hexColors.background }}>
             <Stack.Screen options={{ headerShown: false }} />
             <SafeAreaView className="flex-1">
                 {/* Header */}
                 <View className="px-4 py-3 border-b border-border flex-row items-center justify-between">
                     <TouchableOpacity 
                         onPress={() => router.back()}
-                        className="w-10 h-10 rounded-full bg-secondary items-center justify-center"
+                        className="w-10 h-10 rounded-full items-center justify-center"
+                        style={{ backgroundColor: hexColors.secondary }}
                     >
-                        <Ionicons name="arrow-back" size={24} color={theme.colors.foreground} />
+                        <Ionicons name="arrow-back" size={24} color={hexColors.foreground} />
                     </TouchableOpacity>
-                    <Text className="text-lg font-bold text-foreground">Study Timer</Text>
+                    <Text className="text-lg font-bold " style={{ color: hexColors.foreground }}>Study Timer</Text>
                     <View className="w-10" />
                 </View>
 
                 <ScrollView className="flex-1" contentContainerStyle={{ padding: 20 }}>
                     
                     {/* Mode Selector */}
-                    <View className="flex-row justify-between mb-8 bg-secondary/30 p-1 rounded-2xl">
+                    <View className="flex-row justify-between mb-8 p-1 rounded-2xl" style={{ backgroundColor: `${hexColors.secondary}30` }}>
                         {(Object.keys(MODES) as TimerMode[]).map((m) => (
                             <TouchableOpacity
                                 key={m}
                                 onPress={() => setMode(m)}
-                                className={`flex-1 py-3 rounded-xl items-center flex-row justify-center ${
-                                    mode === m ? 'bg-background shadow-sm' : ''
-                                }`}
+                                className="flex-1 py-3 rounded-xl items-center flex-row justify-center"
+                                style={{ 
+                                    backgroundColor: mode === m ? hexColors.background : 'transparent',
+                                    ...(mode === m ? { shadowOpacity: 0.1, shadowRadius: 3 } : {})
+                                }}
                             >
                                 <Ionicons 
                                     name={MODES[m].icon as any} 
                                     size={16} 
-                                    color={mode === m ? MODES[m].color : theme.colors.mutedForeground} 
+                                    color={mode === m ? MODES[m].color : hexColors.mutedForeground} 
                                     style={{ marginRight: 6 }}
                                 />
-                                <Text className={`font-semibold text-xs ${
-                                    mode === m ? 'text-foreground' : 'text-muted-foreground'
-                                }`}>
+                                <Text 
+                                    className="font-semibold text-xs"
+                                    style={{ color: mode === m ? hexColors.foreground : hexColors.mutedForeground }}
+                                >
                                     {MODES[m].label}
                                 </Text>
                             </TouchableOpacity>
@@ -134,15 +138,15 @@ export default function StudyTimer() {
                         entering={FadeInDown.springify()}
                         className="items-center justify-center mb-12"
                     >
-                        <View className="w-72 h-72 rounded-full border-8 border-secondary items-center justify-center bg-card shadow-lg relative overflow-hidden">
+                        <View className="w-72 h-72 rounded-full border-8 border-secondary items-center justify-center  shadow-lg relative overflow-hidden" style={{ backgroundColor: hexColors.card }}>
                             {/* Progress Background */}
                             <View className="absolute bottom-0 left-0 right-0 h-full w-full bg-secondary/10" />
                             
                             {/* Timer Text */}
-                            <Text className="text-6xl font-black text-foreground font-monospaced tracking-tighter">
+                            <Text className="text-6xl font-black font-monospaced tracking-tighter">
                                 {formatTime(timeLeft)}
                             </Text>
-                            <Text className="text-muted-foreground mt-2 font-medium uppercase tracking-widest">
+                            <Text className="mt-2 font-medium uppercase tracking-widest" style={{ color: hexColors.mutedForeground }}>
                                 {isActive ? 'Running' : 'Paused'}
                             </Text>
                         </View>
@@ -152,9 +156,10 @@ export default function StudyTimer() {
                     <View className="flex-row justify-center gap-6 mb-12">
                         <TouchableOpacity
                             onPress={resetTimer}
-                            className="w-16 h-16 rounded-full bg-secondary items-center justify-center"
+                            className="w-16 h-16 rounded-full items-center justify-center"
+                            style={{ backgroundColor: hexColors.secondary }}
                         >
-                            <Ionicons name="refresh" size={24} color={theme.colors.foreground} />
+                            <Ionicons name="refresh" size={24} color={hexColors.foreground} />
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -176,24 +181,25 @@ export default function StudyTimer() {
                                 setTimeLeft(0);
                                 setIsActive(false);
                             }}
-                            className="w-16 h-16 rounded-full bg-secondary items-center justify-center"
+                            className="w-16 h-16 rounded-full items-center justify-center"
+                            style={{ backgroundColor: hexColors.secondary }}
                         >
-                            <Ionicons name="play-skip-forward" size={24} color={theme.colors.foreground} />
+                            <Ionicons name="play-skip-forward" size={24} color={hexColors.foreground} />
                         </TouchableOpacity>
                     </View>
 
                     {/* Tips Section */}
-                    <View className="bg-card p-6 rounded-3xl border border-border">
+                    <View className="p-6 rounded-3xl" style={{ backgroundColor: hexColors.card, borderWidth: 1, borderColor: hexColors.border }}>
                         <View className="flex-row items-center mb-4">
                             <Ionicons name="sparkles" size={20} color="#EAB308" className="mr-2" />
-                            <Text className="text-lg font-bold text-foreground ml-2">Study Tips</Text>
+                            <Text className="text-lg font-bold ml-2" style={{ color: hexColors.foreground }}>Study Tips</Text>
                         </View>
-                        <Text className="text-muted-foreground leading-6">
-                            • <Text className="font-bold text-foreground">Pomodoro Technique:</Text> Work for 25 minutes, then take a 5-minute break.
+                        <Text className="leading-6" style={{ color: hexColors.mutedForeground }}>
+                            • <Text className="font-bold " style={{ color: hexColors.foreground }}>Pomodoro Technique:</Text> Work for 25 minutes, then take a 5-minute break.
                             {'\n'}
-                            • <Text className="font-bold text-foreground">Eliminate Distractions:</Text> Put your phone on "Do Not Disturb".
+                            • <Text className="font-bold " style={{ color: hexColors.foreground }}>Eliminate Distractions:</Text> Put your phone on "Do Not Disturb".
                             {'\n'}
-                            • <Text className="font-bold text-foreground">Stay Hydrated:</Text> Drink water during your breaks.
+                            • <Text className="font-bold " style={{ color: hexColors.foreground }}>Stay Hydrated:</Text> Drink water during your breaks.
                         </Text>
                     </View>
 
