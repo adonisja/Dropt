@@ -1,9 +1,154 @@
 # Architecture Documentation
 **Project:** Dropt - AI-Powered Course Drop Recommendation System
-**Version:** 1.0.0-MVP
-**Last Updated:** 2025-11-19
+**Version:** 1.2.0-MVP
+**Last Updated:** 2026-01-07
 
 This document describes the architectural decisions, data structures, and design patterns used in Dropt. All decisions are documented with rationales and dated. Changes are sorted in descending chronological order (latest first).
+
+---
+
+## Recent Architectural Changes (2026-01-07)
+
+### Logging & Observability Architecture
+
+**Decision Date:** 2026-01-07
+**Component:** `lib/utils/logger.ts`
+
+**Problem:**
+- 200+ raw `console.log/error` statements scattered across codebase
+- No structured context for debugging (missing source, userId, timestamps)
+- Security risks: sensitive data exposure via `JSON.stringify()` on errors
+- No production safety controls (all logs visible in production)
+
+**Solution:**
+Implemented a structured logger utility with:
+
+1. **Class-based Singleton Pattern:**
+   ```typescript
+   class Logger {
+     private isDev: boolean = __DEV__;
+     
+     public debug(message: string, context?: LogContext): void
+     public info(message: string, context?: LogContext): void
+     public warn(message: string, context?: LogContext): void
+     public error(message: string, context?: LogContext): void
+     public apiError(endpoint: string, error: any, context?: LogContext): void
+     public time(label: string): void
+     public timeEnd(label: string): void
+   }
+   ```
+
+2. **Structured Context:**
+   ```typescript
+   interface LogContext {
+     source?: string;   // Function/component name for traceability
+     userId?: string;   // Pseudonymous user identifier
+     data?: any;        // Additional structured context
+   }
+   ```
+
+3. **Production Safety:**
+   - Only errors logged when `__DEV__ === false`
+   - Debug/info/warn suppressed in production builds
+   - Privacy-first approach (no PII logging)
+
+**Benefits:**
+- **Debuggability:** Every error includes source function and user context
+- **Security:** GDPR/CCPA compliant (pseudonymous identifiers only)
+- **Performance:** Reduced logging overhead in production
+- **Maintainability:** Consistent logging patterns across codebase
+
+**Migration Stats:**
+- 200+ console statements migrated
+- 35+ files updated (core services, student pages, auth pages)
+- Zero TypeScript compilation errors
+
+---
+
+### Platform-Agnostic Theme System
+
+**Decision Date:** 2026-01-07
+**Components:** `lib/theme/theme-styles.ts`, `lib/theme/theme-context.tsx`
+
+**Problem:**
+- NativeWind v4 CSS variables (`bg-background`) don't work in React Native
+- Platform-specific rendering issues with conditional className values
+- Inconsistent theme behavior across web, iOS, and Android
+
+**Solution:**
+Created HSL-to-Hex color converter for cross-platform compatibility:
+
+```typescript
+// theme-styles.ts
+function hslToHex(h: number, s: number, l: number): string {
+  // Converts HSL to RGB to Hex for React Native compatibility
+}
+
+export const hexColors = {
+  background: hslToHex(0, 0, isDark ? 10 : 100),
+  foreground: hslToHex(0, 0, isDark ? 98 : 10),
+  primary: hslToHex(217, 91, isDark ? 60 : 53),
+  // ... 20+ theme colors
+};
+```
+
+**Auto Theme Implementation:**
+- **Trigger:** Time-based (6PM-6AM = dark, 6AM-6PM = light)
+- **Rationale:** Predictable UX across all platforms vs system detection
+- **Trade-off:** Less respect for OS preference, but consistent experience
+
+**Migration:**
+- 23 files migrated from NativeWind classes to `hexColors`
+- All components now use platform-agnostic theme values
+- Seasonal emoji icons added to dashboard (❄️🌸☀️🍂)
+
+---
+
+### Semester-Based Data Lifecycle
+
+**Decision Date:** 2026-01-07
+**Components:** `lib/utils/semester-stats.ts`, `lib/utils/semester-utils.ts`
+
+**Problem:**
+- Deadline tracker accumulated tasks across all time
+- No way to see current semester progress vs lifetime achievement
+- Data needed both time-bound (per semester) AND cumulative (all-time) views
+
+**Solution:**
+Dual statistics model with automatic semester transitions:
+
+```typescript
+interface UserSettings {
+  // Current semester context
+  currentSemester: string;   // "Spring 2026"
+  currentYear: number;        // 2026
+  
+  // Per-semester stats (reset each semester)
+  tasksCompleted: number;
+  tasksMissed: number;
+  
+  // Lifetime stats (never reset)
+  totalTasksCompleted: number;
+  totalTasksMissed: number;
+  totalTasksEver: number;
+}
+```
+
+**Transition Logic:**
+1. Detect semester change: `detectCurrentSemester()` compares current date to stored semester
+2. Archive old data: Save per-semester stats to lifetime totals
+3. Reset counters: `tasksCompleted = 0`, `tasksMissed = 0`
+4. Update context: `currentSemester = "Fall 2026"`, `currentYear = 2026`
+
+**Benefits:**
+- **Motivation:** Users see fresh start each semester
+- **Achievement:** Lifetime stats show long-term progress
+- **Analytics:** Historical data preserved for insights
+
+**Implementation:**
+- Client-side detection on app launch (MVP)
+- Future: Server-side cron job for automatic transitions
+- Dynamic imports to avoid circular dependencies
 
 ---
 
@@ -21,18 +166,20 @@ This document describes the architectural decisions, data structures, and design
 ### Frontend
 - **Framework:** React Native with Expo and Expo Router
 - **Language:** TypeScript
-- **Styling:** NativeWind v4 (Tailwind CSS) + React Native StyleSheet
+- **Styling:** Platform-agnostic theme system (HSL→Hex) + React Native StyleSheet
 - **UI Components:** @react-native-community/datetimepicker
 - **State Management:** React Context with useReducer
 - **Build Tool:** Expo/Metro
-- **Theme:** System Theme Detection (Light/Dark mode)
+- **Theme:** Time-based auto theme (6PM-6AM dark mode)
+- **Logging:** Structured logger with production safety (`lib/utils/logger.ts`)
 
-**Decision Date:** 2025-11-23
-**Updated From:** React Native StyleSheet & NativeWind (2025-11-18)
+**Decision Date:** 2026-01-07
+**Updated From:** NativeWind v4 with CSS variables (2025-11-23)
 
 **Rationale:**
-- NativeWind v4 provides a robust Tailwind CSS implementation for React Native
-- System theme detection ensures the app respects user's OS preferences
+- HSL-to-Hex conversion provides true cross-platform theme support
+- Time-based theming offers predictable UX across all platforms
+- Structured logger ensures production safety and GDPR compliance
 - React Native with Expo enables web, iOS, and Android from single codebase
 - Expo Router provides file-based routing similar to Next.js
 - TypeScript provides type safety throughout the stack

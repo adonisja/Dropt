@@ -56,5 +56,7 @@ pnpm-debug.log*
 .aws/
 aws-exports.js
 
-# Documentation (if containing sensitive info)
-# docs/
+# Documentation - Project-specific prep materials
+docs/DEMO_GUIDE.md
+docs/DEMO_SCRIPT.md
+docs/INTERVIEW_PREP.md

@@ -5,6 +5,102 @@ This document tracks all bugs discovered, fixes implemented, and the rationale b
 
 ---
 
+## 2026-01-07 - Security & Logging Infrastructure
+
+### Enhancement #21: Structured Logger Implementation
+**Files:** `lib/utils/logger.ts` + 35+ files across codebase
+**Severity:** Medium (Security/Maintainability)
+**Type:** Security Enhancement
+
+**Issue:**
+Application used raw `console.log/error/warn` statements throughout the codebase (200+ instances), which:
+1. Exposed sensitive data in production builds (error objects with JSON.stringify)
+2. Lacked structured context for debugging (no source function, userId, or timestamps)
+3. Had no production safety controls (all logs visible in production)
+4. Made error tracking and correlation difficult across distributed systems
+
+**Problem Analysis:**
+- **Security Risk**: Console logs in production could expose PII, error stack traces, and system internals
+- **GDPR/CCPA Concerns**: Uncontrolled logging might violate privacy regulations
+- **Debugging Difficulty**: Logs lacked context about where errors occurred and which user was affected
+- **Performance**: Excessive logging in production could impact app performance
+
+**Solution Implemented:**
+Created a comprehensive structured logger utility (`lib/utils/logger.ts`) with:
+
+1. **Class-based singleton pattern**:
+   ```typescript
+   class Logger {
+     private isDev: boolean = __DEV__;
+     public debug/info/warn/error(message: string, context?: LogContext): void
+   }
+   ```
+
+2. **Structured LogContext interface**:
+   ```typescript
+   interface LogContext {
+     source?: string;      // Function/component name
+     userId?: string;      // User identifier (pseudonymous)
+     data?: any;          // Additional context
+   }
+   ```
+
+3. **Production safety**:
+   - Only errors logged when `__DEV__ === false`
+   - Debug/info/warn suppressed in production builds
+   - No sensitive data exposure
+
+4. **Enhanced developer experience**:
+   - ANSI color codes (cyan/blue/yellow/red)
+   - Emoji symbols (🔍 ℹ️ ⚠️ ❌)
+   - ISO timestamps with milliseconds
+   - Performance timing methods (`time()`/`timeEnd()`)
+
+**Migration Completed:**
+- ✅ **Core Services** (135 statements): data-client, auth-context, ai-service, seed-data, theme-context, amplify-config, semester-stats
+- ✅ **Student Pages** (50+ statements): dashboard, settings, 8 courses pages, 3 assignments pages, 9 tools pages
+- ✅ **Auth Pages** (19 statements): login, confirm
+- ✅ **Components** (0 statements): Already clean
+- ✅ **Zero console statements** remaining in app/ and components/ directories
+
+**Migration Pattern:**
+```typescript
+// Before:
+console.error('Error fetching courses:', JSON.stringify(errors, null, 2));
+
+// After:
+logger.error('Error fetching courses', {
+  source: 'fetchStudentCourses',
+  userId: studentId,
+  data: { errors }
+});
+```
+
+**Security & Privacy Compliance:**
+- ✅ **GDPR Article 6** compliance: userId logging permitted for legitimate interest (debugging, security monitoring)
+- ✅ **Pseudonymous identifiers**: Cognito UUIDs don't constitute directly identifying PII
+- ✅ **CCPA compliant**: Technical identifiers allowed for service provision
+- ✅ **No sensitive data**: Passwords, payment info, or sensitive PII never logged
+- ✅ **Data minimization**: Only necessary context logged, production logs limited to errors
+
+**Testing:**
+- Verified all files compile without TypeScript errors
+- Confirmed no console statements remain in production code (excluding logger implementation)
+- Validated production mode suppresses debug/info/warn logs
+
+**Key Learnings:**
+1. **Structured logging is essential** for production debugging and error correlation
+2. **Privacy-first approach**: Always consider GDPR/CCPA when implementing logging
+3. **Production safety**: Use feature flags (`__DEV__`) to control log verbosity
+4. **Context is key**: Including source, userId, and data makes debugging significantly easier
+
+**Prevention:**
+- Add ESLint rule to prevent direct console usage
+- Document logging standards in contributing guidelines
+- Review PR diffs for accidental console statements
+
+---
+
 ## 2026-01-05 - Worklets Version Mismatch (Expo Go Limitation)
 
 ### Bug #20: Worklets Mismatch Between JavaScript and Native Code
