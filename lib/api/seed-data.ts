@@ -1,11 +1,14 @@
 import { getClient } from './data-client';
+import { logger } from '@/lib/utils/logger';
 
 export async function seedTestCourses(studentId: string) {
-    console.log('[seed-data] Starting data seed for student:', studentId);
+    logger.info('Starting test data seed', {
+        source: 'seed-data.seedTestCourses',
+        userId: studentId
+    });
     
     try {
         const client = getClient();
-        console.log('[seed-data] Client retrieved');
 
         const courses = [
             {
@@ -95,7 +98,11 @@ export async function seedTestCourses(studentId: string) {
         for (const course of courses) {
             try {
                 // 1. Create Course
-                console.log(`[seed-data] Creating course: ${course.name}`);
+                logger.debug(`Creating seed course: ${course.name}`, {
+                    source: 'seed-data.seedTestCourses',
+                    userId: studentId,
+                    data: { courseId: course.id }
+                });
                 const { data: newCourse, errors: courseErrors } = await client.models.StudentCourse.create({
                     studentId,
                     courseId: course.id,
@@ -110,16 +117,18 @@ export async function seedTestCourses(studentId: string) {
                 });
 
                 if (courseErrors) {
-                    console.error(`[seed-data] Failed to create course ${course.name}:`, JSON.stringify(courseErrors, null, 2));
+                    logger.error(`Failed to create seed course: ${course.name}`, {
+                        source: 'seed-data.seedTestCourses',
+                        userId: studentId,
+                        data: { errors: courseErrors, courseId: course.id }
+                    });
                     throw new Error(`Failed to create course ${course.name}: ${JSON.stringify(courseErrors)}`);
                 }
 
                 const studentCourseId = `${studentId}#${course.id}`;
-                console.log(`[seed-data] Course created with ID: ${studentCourseId}`);
 
                 // 2. Create Categories
                 for (const cat of course.categories) {
-                    console.log(`[seed-data] Creating category: ${cat.name}`);
                     const { errors: catErrors } = await client.models.GradeCategory.create({
                         studentCourseId,
                         category: cat.name,
@@ -127,14 +136,16 @@ export async function seedTestCourses(studentId: string) {
                         dropLowest: cat.drop
                     });
                     if (catErrors) {
-                        console.error(`[seed-data] Failed to create category ${cat.name}:`, catErrors);
-                        // Don't throw here, try to continue with other categories
+                        logger.warn(`Failed to create seed category: ${cat.name}`, {
+                            source: 'seed-data.seedTestCourses',
+                            userId: studentId,
+                            data: { errors: catErrors, courseId: course.id }
+                        });
                     }
                 }
 
                 // 3. Create Assignments
                 for (const assign of course.assignments) {
-                    console.log(`[seed-data] Creating assignment: ${assign.name}`);
                     const { errors: assignErrors } = await client.models.Assignment.create({
                         studentCourseId,
                         assignmentId: assign.name.replace(/\s+/g, '-').toLowerCase(),
@@ -146,19 +157,35 @@ export async function seedTestCourses(studentId: string) {
                         dateAssigned: new Date().toISOString().split('T')[0]
                     });
                     if (assignErrors) {
-                        console.error(`[seed-data] Failed to create assignment ${assign.name}:`, assignErrors);
+                        logger.warn(`Failed to create seed assignment: ${assign.name}`, {
+                            source: 'seed-data.seedTestCourses',
+                            userId: studentId,
+                            data: { errors: assignErrors, courseId: course.id }
+                        });
                     }
                 }
 
             } catch (error) {
-                console.error(`[seed-data] Error seeding course ${course.name}:`, error);
-                throw error; // Re-throw to alert the user
+                logger.error(`Error seeding course: ${course.name}`, {
+                    source: 'seed-data.seedTestCourses',
+                    userId: studentId,
+                    data: { error, courseId: course.id }
+                });
+                throw error;
             }
         }
 
-        console.log('[seed-data] Data seed completed!');
+        logger.info('Test data seed completed successfully', {
+            source: 'seed-data.seedTestCourses',
+            userId: studentId,
+            data: { coursesSeeded: courses.length }
+        });
     } catch (e) {
-        console.error('[seed-data] Fatal error in seedTestCourses:', e);
+        logger.error('Fatal error in seed data process', {
+            source: 'seed-data.seedTestCourses',
+            userId: studentId,
+            data: { error: e }
+        });
         throw e;
     }
 }

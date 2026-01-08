@@ -1,6 +1,7 @@
 import { Alert, Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { getClient } from './data-client';
+import { logger } from '@/lib/utils/logger';
 
 export interface AIResponse<T> {
     success: boolean;
@@ -45,7 +46,10 @@ export const AIService = {
                 payload.mimeType = input.mimeType || 'application/pdf';
             }
 
-            console.log('[AIService] Sending extractData request...', { docType, inputType: input.type });
+            logger.debug('Sending AI extraction request', {
+                source: 'AIService.extractData',
+                data: { docType, inputType: input.type }
+            });
             const client = getClient();
             const { data, errors } = await client.queries.generateAIResponse({
                 action: 'extractData',
@@ -53,20 +57,32 @@ export const AIService = {
             });
 
             if (errors) {
-                console.error('[AIService] GraphQL Errors:', errors);
+                logger.error('GraphQL errors in AI extraction', {
+                    source: 'AIService.extractData',
+                    data: { errors, docType, inputType: input.type }
+                });
                 throw new Error(errors[0].message);
             }
             
             if (!data) {
-                console.error('[AIService] No data returned');
+                logger.error('No data returned from AI service', {
+                    source: 'AIService.extractData',
+                    data: { docType, inputType: input.type }
+                });
                 throw new Error("No data returned from AI service");
             }
 
-            console.log('[AIService] Success response received');
+            logger.info('AI extraction successful', {
+                source: 'AIService.extractData',
+                data: { docType, inputType: input.type }
+            });
             return { success: true, data: JSON.parse(data) };
 
         } catch (error) {
-            console.error("AI Extraction Failed:", error);
+            logger.error('AI extraction failed', {
+                source: 'AIService.extractData',
+                data: { error, docType, inputType: input.type }
+            });
             return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
         }
     },
@@ -101,7 +117,10 @@ export const AIService = {
             return "Unable to generate advice.";
 
         } catch (error) {
-            console.error("AI Advice Failed:", error);
+            logger.error('AI advice generation failed', {
+                source: 'AIService.generateAdvice',
+                data: { error, courseName: context.courseName, currentGrade: context.currentGrade }
+            });
             
             // Enhanced Fallback Logic (Simulating AI Structure for Offline/Error State)
             const gap = context.passingGrade - context.currentGrade;
@@ -167,7 +186,10 @@ ${strategy}
             return "Unable to generate email.";
 
         } catch (error) {
-            console.error("AI Email Generation Failed:", error);
+            logger.error('AI email generation failed', {
+                source: 'AIService.generateEmail',
+                data: { error, courseName: context.courseName, topic: context.topic }
+            });
             return "Unable to generate email at this time.";
         }
     }

@@ -5,6 +5,15 @@ All notable changes to the Dropt project will be documented in this file.
 ## [Unreleased] - 2026-01-07
 
 ### Added
+- **Enhanced Logger Utility** (`lib/utils/logger.ts`):
+  - Class-based singleton logger with structured logging support
+  - Log levels: debug (🔍), info (ℹ️), warn (⚠️), error (❌)
+  - ANSI color codes for terminal output (cyan/blue/yellow/red)
+  - ISO timestamps with milliseconds for precise tracking
+  - LogContext interface: `{ source?: string, userId?: string, data?: any }`
+  - Production safety: Only errors logged in production (via `__DEV__` flag)
+  - Special methods: `apiError()` for API failures, `time()/timeEnd()` for performance monitoring
+  
 - **Platform-Agnostic Theme System**:
   - Created `lib/theme/theme-styles.ts` with HSL to Hex color converter
   - Added `hexColors` and `themedStyles` to theme context for React Native compatibility
@@ -14,6 +23,8 @@ All notable changes to the Dropt project will be documented in this file.
 - **Security Enhancements**:
   - Added Amplify-generated files to `.gitignore` (API.ts, mutations.ts, queries.ts, subscriptions.ts, schema.ts)
   - Protected backend schema structure from public exposure
+  - Migrated all console statements to structured logger (200+ instances)
+  - Implemented GDPR/CCPA-compliant logging practices
 
 - **Semester-Based Deadline Tracking**:
   - Deadline tracker now operates on current semester only
@@ -35,6 +46,14 @@ All notable changes to the Dropt project will be documented in this file.
   - Added testing checklist and future enhancement roadmap
 
 ### Changed
+- **Complete Logger Migration** (200+ statements across 35+ files):
+  - **Core Services**: data-client.ts (85), auth-context.tsx (20), ai-service.ts (7), seed-data.ts (15)
+  - **Student Pages**: Dashboard, settings, all courses pages, all tools pages, assignments
+  - **Auth Pages**: login.tsx (5), confirm.tsx (14)
+  - Migration pattern: `console.error()` → `logger.error('message', { source, userId, data })`
+  - All errors now include contextual information for debugging
+  - Production builds only log errors (debug/info suppressed via `__DEV__`)
+  
 - **Complete Theme Migration** (23 files):
   - Migrated all components from NativeWind CSS classes to platform-agnostic `hexColors`
   - Components: BottomNav, GradeDistributionChart, RecommendationCard, SuccessScreen, HeaderProfileBtn
@@ -76,9 +95,21 @@ All notable changes to the Dropt project will be documented in this file.
   - Resolved CSS variable limitation in React Native (bg-background, text-foreground)
   - Eliminated platform-specific rendering issues with conditional className values
   - Fixed ternary operator syntax within style attributes
+
+- **Logging & Security**:
+  - Eliminated all console statements from app/ and components/ directories
+  - Fixed potential data exposure in error messages (no more `JSON.stringify()` on errors)
+  - Improved error tracking with structured context (source function, userId, error data)
   
 - **Type Safety**: Added null checks and type assertions for new UserSettings fields
 - **Performance**: Deadline tracker only loads current semester courses (reduced data fetch)
+
+### Security
+- **GDPR/CCPA Compliance**:
+  - userId logging permitted under GDPR Article 6 (legitimate interest for debugging/security)
+  - Cognito UUIDs are pseudonymous identifiers (not directly identifying PII)
+  - No passwords or sensitive data logged in any environment
+  - Production logging limited to errors only (privacy-first approach)
 
 ## [Unreleased] - 2025-11-23
 

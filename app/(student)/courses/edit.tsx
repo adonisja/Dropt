@@ -18,6 +18,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useTheme } from '@/lib/theme/theme-context';
 import { getStudentCourse, updateStudentCourse, deleteStudentCourse } from '@/lib/api/data-client';
+import { logger } from '@/lib/utils/logger';
 import SuccessScreen from '@/components/SuccessScreen';
 
 export default function EditCourse() {
@@ -58,7 +59,11 @@ export default function EditCourse() {
             }
         } catch (err) {
             setFormError('Failed to load course details');
-            console.error(err);
+            logger.error('Error loading course for edit', {
+                source: 'courses.edit.loadCourse',
+                userId: user?.id,
+                data: { error: err, courseId }
+            });
         } finally {
             setIsLoading(false);
         }
@@ -77,9 +82,17 @@ export default function EditCourse() {
             
             setIsSubmitting(true);
             try {
-                console.log('Attempting to delete course:', courseId);
+                logger.info('Attempting to delete course', {
+                    source: 'courses.edit.handleDelete',
+                    userId: user?.id,
+                    data: { courseId }
+                });
                 const success = await deleteStudentCourse(user.id, courseId);
-                console.log('Delete result:', success);
+                logger.info('Course delete result', {
+                    source: 'courses.edit.handleDelete',
+                    userId: user?.id,
+                    data: { courseId, success }
+                });
                 if (success) {
                     // Navigate to dashboard and force refresh
                     router.replace('/(student)/student_dashboard');
@@ -88,7 +101,11 @@ export default function EditCourse() {
                     setIsSubmitting(false);
                 }
             } catch (error) {
-                console.error('Delete exception:', error);
+                logger.error('Exception deleting course', {
+                    source: 'courses.edit.handleDelete',
+                    userId: user?.id,
+                    data: { error, courseId }
+                });
                 setFormError('An error occurred while deleting');
                 setIsSubmitting(false);
             }

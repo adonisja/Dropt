@@ -90,7 +90,11 @@ export default function Analytics() {
                 setCurrentGPA(calculateSemesterGPA(coursesForGPA));
 
             } catch (error) {
-                console.error('Error fetching analytics data:', error);
+                logger.error('Error fetching analytics data', {
+                    source: 'analytics.fetchAnalyticsData',
+                    userId: user?.id,
+                    data: { error }
+                });
             } finally {
                 setIsLoading(false);
             }

@@ -8,6 +8,7 @@
  */
 
 import { updateUserSettings, getOrCreateUserSettings } from '../api/data-client';
+import { logger } from './logger';
 
 export interface SemesterStats {
     totalTasksCompleted: number;
@@ -56,7 +57,11 @@ export async function updateSemesterStats(
             totalTasksEver: Math.max(0, newTotal),
         } as any);
     } catch (error) {
-        console.error('Error updating semester stats:', error);
+        logger.error('Error updating semester stats', {
+            source: 'updateSemesterStats',
+            userId,
+            data: { error, completedDelta, missedDelta, totalDelta }
+        });
         throw error;
     }
 }
@@ -85,7 +90,11 @@ export async function getSemesterStats(userId: string): Promise<SemesterStats> {
             totalTasksEver: (settings as any).totalTasksEver || 0,
         };
     } catch (error) {
-        console.error('Error fetching semester stats:', error);
+        logger.error('Error fetching semester stats', {
+            source: 'getSemesterStats',
+            userId,
+            data: { error }
+        });
         return {
             totalTasksCompleted: 0,
             totalTasksMissed: 0,
@@ -139,9 +148,22 @@ export async function handleSemesterTransition(
             totalTasksMissed: newTotalMissed,
         } as any);
         
-        console.log(`Semester transition complete: ${currentSemesterCompleted} completed, ${currentSemesterMissed} missed added to lifetime stats`);
+        logger.info('Semester transition complete', {
+            source: 'handleSemesterTransition',
+            userId,
+            data: {
+                completedAdded: currentSemesterCompleted,
+                missedAdded: currentSemesterMissed,
+                newSemester,
+                newYear
+            }
+        });
     } catch (error) {
-        console.error('Error handling semester transition:', error);
+        logger.error('Error handling semester transition', {
+            source: 'handleSemesterTransition',
+            userId,
+            data: { error, newSemester, newYear }
+        });
         throw error;
     }
 }

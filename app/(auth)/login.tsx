@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator 
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../lib/auth/auth-context';
+import { logger } from '@/lib/utils/logger';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -12,9 +13,10 @@ export default function Login() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    console.log('Login screen - isAuthenticated:', isAuthenticated);
     if (isAuthenticated) {
-      console.log('Redirecting to home...');
+      logger.debug('User already authenticated, redirecting', {
+        source: 'login.useEffect'
+      });
       router.replace('/');
     }
   }, [isAuthenticated]);
@@ -25,12 +27,17 @@ export default function Login() {
     }
 
     try {
-      console.log('handleLogin called');
+      logger.debug('Login attempt', {
+        source: 'login.handleLogin',
+        data: { email }
+      });
       await login({ email, password });
-      console.log('login() completed successfully');
       router.replace('/');
     } catch (err) {
-      console.log('handleLogin caught error:', err);
+      logger.debug('Login failed', {
+        source: 'login.handleLogin',
+        data: { error: err, email }
+      });
       // Error is handled by auth context
     }
   };

@@ -1,21 +1,27 @@
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { StudentCourseData, GradeCategory, Assignment } from '@/lib/types';
+import { logger } from '@/lib/utils/logger';
 
 // Lazy-initialize the client to ensure Amplify is configured first
 let _client: ReturnType<typeof generateClient<Schema>> | null = null;
 
 function getClient() {
     if (!_client) {
-        console.log('[data-client] Initializing GraphQL client with userPool auth mode');
+        logger.info('Initializing GraphQL client with userPool auth mode', { source: 'data-client.getClient' });
         try {
             _client = generateClient<Schema>({
                 authMode: 'userPool'
             });
-            console.log('[data-client] Client initialized successfully');
-            console.log('[data-client] Available models:', Object.keys(_client.models || {}));
+            logger.info('Client initialized successfully', { 
+                source: 'data-client.getClient',
+                data: { availableModels: Object.keys(_client.models || {}) }
+            });
         } catch (error) {
-            console.error('[data-client] Failed to initialize client:', error);
+            logger.error('Failed to initialize GraphQL client', {
+                source: 'data-client.getClient',
+                data: { error }
+            });
             throw error;
         }
     }
@@ -40,12 +46,20 @@ export async function fetchStudentCourses(studentId: string): Promise<Schema['St
         });
 
         if (errors) {
-            console.error('Error fetching courses:', JSON.stringify(errors, null, 2));
+            logger.error('GraphQL errors fetching courses', {
+                source: 'fetchStudentCourses',
+                userId: studentId,
+                data: { errors }
+            });
         }
 
         return data || [];
     } catch (error) {
-        console.error('Error fetching student courses:', error);
+        logger.error('Error fetching student courses', {
+            source: 'fetchStudentCourses',
+            userId: studentId,
+            data: { error }
+        });
         return [];
     }
 }
@@ -68,13 +82,21 @@ export async function fetchUserSettings(userId: string): Promise<Schema['UserSet
         });
 
         if (errors) {
-            console.error(`Error fetching user settings: ${errors}}`);
+            logger.error('Error fetching user settings', {
+                source: 'fetchUserSettings',
+                userId,
+                data: { errors }
+            });
             return null;
         }
 
         return data;
     } catch(error) {
-        console.error(`Error fetching user settings: ${error}}`);
+        logger.error('Error fetching user settings', {
+            source: 'fetchUserSettings',
+            userId,
+            data: { error }
+        });
         return null;
     }
 }
@@ -104,13 +126,21 @@ export async function createUserSettings(
         });
 
         if (errors) {
-            console.error(`Error creating user settings: ${errors}`)
+            logger.error('Error creating user settings', {
+                source: 'createUserSettings',
+                userId,
+                data: { errors, settings }
+            });
             return null;
         }
 
         return data;
     } catch(error) {
-        console.error(`Error creating user settings: ${error}`)
+        logger.error('Error creating user settings', {
+            source: 'createUserSettings',
+            userId,
+            data: { error, settings }
+        });
         return null;
     }
 }
@@ -135,13 +165,21 @@ export async function updateUserSettings(
         });
 
         if (errors) {
-            console.error(`Error updating user settings: ${errors}`)
+            logger.error('Error updating user settings', {
+                source: 'updateUserSettings',
+                userId,
+                data: { errors, updates }
+            });
             return null;
         }
 
         return data
     } catch(error) {
-        console.error(`Error updating user settings: ${error}`)
+        logger.error('Error updating user settings', {
+            source: 'updateUserSettings',
+            userId,
+            data: { error, updates }
+        });
         return null;
     }
 }
@@ -181,7 +219,14 @@ export async function getOrCreateUserSettings(
         const { detectCurrentSemester } = await import('@/lib/utils/semester-utils');
         
         if (needsSemesterTransition(settings.currentSemester, settings.currentYear)) {
-            console.log('Semester transition detected');
+            logger.info('Semester transition detected', {
+                source: 'getOrCreateUserSettings',
+                userId,
+                data: {
+                    currentSemester: settings.currentSemester,
+                    currentYear: settings.currentYear
+                }
+            });
             
             // Get the new semester info
             const newSemesterInfo = detectCurrentSemester();
@@ -214,18 +259,29 @@ export async function getOrCreateUserSettings(
         // Import migration function dynamically to avoid circular deps
         const { migrateLegacyCourses } = await import('@/lib/utils/migrate-legacy-courses');
         
-        console.log('Running legacy course migration...');
+        logger.info('Running legacy course migration', {
+            source: 'getOrCreateUserSettings',
+            userId
+        });
         const result = await migrateLegacyCourses(userId);
         
         if (result.success || result.migratedCount > 0) {
-            console.log(`Migration complete: ${result.migratedCount} courses updated`);
+            logger.info('Legacy course migration complete', {
+                source: 'getOrCreateUserSettings',
+                userId,
+                data: { migratedCount: result.migratedCount }
+            });
             
             // Mark migration as complete
             settings = await updateUserSettings(userId, {
                 hasRunLegacyMigration: true
             });
         } else {
-            console.error('Migration failed:', result.errors);
+            logger.error('Legacy course migration failed', {
+                source: 'getOrCreateUserSettings',
+                userId,
+                data: { errors: result.errors }
+            });
         }
     }
     */
@@ -246,13 +302,19 @@ export async function fetchGradeCategories(studentCourseId: string): Promise<Sch
         });
 
         if (errors) {
-            console.error('Error fetching categories:', errors);
+            logger.error('Error fetching grade categories', {
+                source: 'fetchGradeCategories',
+                data: { errors, studentCourseId }
+            });
             return [];
         }
 
         return data || [];
     } catch (error) {
-        console.error('Error fetching grade categories:', error);
+        logger.error('Error fetching grade categories', {
+            source: 'fetchGradeCategories',
+            data: { error, studentCourseId }
+        });
         return [];
     }
 }
@@ -269,13 +331,19 @@ export async function fetchAssignments(studentCourseId: string): Promise<Schema[
         });
 
         if (errors) {
-            console.error('Error fetching assignments:', errors);
+            logger.error('Error fetching assignments', {
+                source: 'fetchAssignments',
+                data: { errors, studentCourseId }
+            });
             return [];
         }
 
         return data || [];
     } catch (error) {
-        console.error('Error fetching assignments:', error);
+        logger.error('Error fetching assignments', {
+            source: 'fetchAssignments',
+            data: { error, studentCourseId }
+        });
         return [];
     }
 }
@@ -295,7 +363,11 @@ export async function fetchCompleteCourseData(
         });
 
         if (courseErrors || !courseData) {
-            console.error('Error fetching course:', courseErrors);
+            logger.error('Error fetching course data', {
+                source: 'fetchCompleteCourseData',
+                userId: studentId,
+                data: { errors: courseErrors, courseId }
+            });
             return null;
         }
 
@@ -313,7 +385,11 @@ export async function fetchCompleteCourseData(
             assignments
         };
     } catch (error) {
-        console.error('Error fetching complete course data:', error);
+        logger.error('Error fetching complete course data', {
+            source: 'fetchCompleteCourseData',
+            userId: studentId,
+            data: { error, courseId }
+        });
         return null;
     }
 }
@@ -393,28 +469,36 @@ export async function createStudentCourse(
         passingGrade?: number;
     }
 ): Promise<Schema['StudentCourse']['type'] | null> {
-    console.log('[data-client] createStudentCourse called');
+    logger.debug('createStudentCourse called', { 
+        source: 'createStudentCourse',
+        userId: studentId,
+        data: { courseId: courseData.courseId }
+    });
 
     const client = getClient();
-    console.log('[data-client] Got client, checking models...');
 
     if (!client.models) {
-        console.error('[data-client] ERROR: client.models is undefined!');
+        logger.error('GraphQL client models undefined', {
+            source: 'createStudentCourse',
+            userId: studentId
+        });
         throw new Error('GraphQL client models not available');
     }
 
     if (!client.models.StudentCourse) {
-        console.error('[data-client] ERROR: StudentCourse model not found!');
-        console.error('[data-client] Available models:', Object.keys(client.models));
+        logger.error('StudentCourse model not found', {
+            source: 'createStudentCourse',
+            userId: studentId,
+            data: { availableModels: Object.keys(client.models) }
+        });
         throw new Error('StudentCourse model not available');
     }
 
-    console.log('[data-client] StudentCourse model found, creating record...');
-
     try {
-        console.log('[data-client] Creating StudentCourse:', {
-            studentId,
-            ...courseData
+        logger.debug('Creating StudentCourse record', {
+            source: 'createStudentCourse',
+            userId: studentId,
+            data: courseData
         });
 
         const createPromise = client.models.StudentCourse.create({
@@ -431,21 +515,31 @@ export async function createStudentCourse(
             passingGrade: courseData.passingGrade ?? 60.0
         });
 
-        console.log('[data-client] Create promise returned:', createPromise);
-
         const result = await createPromise;
-        console.log('[data-client] Create result:', result);
 
         const { data, errors } = result;
 
         if (errors) {
-            console.error('[data-client] GraphQL errors creating course:', JSON.stringify(errors, null, 2));
+            logger.error('GraphQL errors creating course', {
+                source: 'createStudentCourse',
+                userId: studentId,
+                data: { errors, courseData }
+            });
             return null;
         }
 
+        logger.info('StudentCourse created successfully', {
+            source: 'createStudentCourse',
+            userId: studentId,
+            data: { courseId: courseData.courseId }
+        });
         return data;
     } catch (error) {
-        console.error('[data-client] Exception creating student course:', error);
+        logger.error('Exception creating student course', {
+            source: 'createStudentCourse',
+            userId: studentId,
+            data: { error, courseData }
+        });
         throw error;
     }
 }
@@ -461,13 +555,21 @@ export async function getStudentCourse(studentId: string, courseId: string): Pro
         });
 
         if (errors) {
-            console.error('Error fetching student course:', errors);
+            logger.error('Error fetching student course', {
+                source: 'getStudentCourse',
+                userId: studentId,
+                data: { errors, courseId }
+            });
             return null;
         }
 
         return data;
     } catch (error) {
-        console.error('Error fetching student course:', error);
+        logger.error('Error fetching student course', {
+            source: 'getStudentCourse',
+            userId: studentId,
+            data: { error, courseId }
+        });
         return null;
     }
 }
@@ -493,13 +595,21 @@ export async function updateStudentCourse(
         });
 
         if (errors) {
-            console.error('Error updating student course:', errors);
+            logger.error('Error updating student course', {
+                source: 'updateStudentCourse',
+                userId: studentId,
+                data: { errors, courseId, updates }
+            });
             return null;
         }
 
         return data;
     } catch (error) {
-        console.error('Error updating student course:', error);
+        logger.error('Error updating student course', {
+            source: 'updateStudentCourse',
+            userId: studentId,
+            data: { error, courseId, updates }
+        });
         return null;
     }
 }
@@ -509,7 +619,11 @@ export async function updateStudentCourse(
  */
 export async function deleteStudentCourse(studentId: string, courseId: string): Promise<boolean> {
     try {
-        console.log(`[deleteStudentCourse] Starting delete for ${courseId}`);
+        logger.info('Starting cascade delete for course', {
+            source: 'deleteStudentCourse',
+            userId: studentId,
+            data: { courseId }
+        });
         
         // 1. Construct the studentCourseId used by related models
         // Note: In add.tsx, we construct it as `${user.id}#${courseId}`
@@ -517,7 +631,11 @@ export async function deleteStudentCourse(studentId: string, courseId: string): 
 
         // 2. Delete all assignments
         const assignments = await fetchAssignments(studentCourseId);
-        console.log(`[deleteStudentCourse] Deleting ${assignments.length} assignments`);
+        logger.debug(`Deleting ${assignments.length} assignments`, {
+            source: 'deleteStudentCourse',
+            userId: studentId,
+            data: { courseId, count: assignments.length }
+        });
         await Promise.all(assignments.map(assignment => 
             getClient().models.Assignment.delete({
                 studentCourseId,
@@ -527,7 +645,11 @@ export async function deleteStudentCourse(studentId: string, courseId: string): 
 
         // 3. Delete all categories
         const categories = await fetchGradeCategories(studentCourseId);
-        console.log(`[deleteStudentCourse] Deleting ${categories.length} categories`);
+        logger.debug(`Deleting ${categories.length} categories`, {
+            source: 'deleteStudentCourse',
+            userId: studentId,
+            data: { courseId, count: categories.length }
+        });
         await Promise.all(categories.map(category => 
             getClient().models.GradeCategory.delete({
                 studentCourseId,
@@ -537,7 +659,11 @@ export async function deleteStudentCourse(studentId: string, courseId: string): 
 
         // 4. Delete all resources
         const resources = await fetchResources(studentCourseId);
-        console.log(`[deleteStudentCourse] Deleting ${resources.length} resources`);
+        logger.debug(`Deleting ${resources.length} resources`, {
+            source: 'deleteStudentCourse',
+            userId: studentId,
+            data: { courseId, count: resources.length }
+        });
         await Promise.all(resources.map(resource => 
             getClient().models.CourseResource.delete({
                 studentCourseId,
@@ -546,21 +672,32 @@ export async function deleteStudentCourse(studentId: string, courseId: string): 
         ));
 
         // 5. Delete the course itself
-        console.log(`[deleteStudentCourse] Deleting course record for studentId: ${studentId}, courseId: ${courseId}`);
         const { errors } = await getClient().models.StudentCourse.delete({
             studentId,
             courseId
         });
 
         if (errors) {
-            console.error('Error deleting student course:', JSON.stringify(errors, null, 2));
+            logger.error('Error deleting student course', {
+                source: 'deleteStudentCourse',
+                userId: studentId,
+                data: { errors, courseId }
+            });
             return false;
         }
 
-        console.log(`[deleteStudentCourse] Successfully deleted course ${courseId}`);
+        logger.info('Successfully deleted course', {
+            source: 'deleteStudentCourse',
+            userId: studentId,
+            data: { courseId }
+        });
         return true;
     } catch (error) {
-        console.error('Error deleting student course:', error);
+        logger.error('Error deleting student course', {
+            source: 'deleteStudentCourse',
+            userId: studentId,
+            data: { error, courseId }
+        });
         return false;
     }
 }
@@ -578,12 +715,9 @@ export async function createGradeCategory(
     }
 ): Promise<Schema['GradeCategory']['type'] | null> {
     try {
-        console.log('[data-client] Creating GradeCategory:', {
-            studentCourseId,
-            category: categoryData.category,
-            weight: categoryData.weight,
-            dropLowest: categoryData.dropLowest,
-            description: categoryData.description
+        logger.debug('Creating GradeCategory', {
+            source: 'createGradeCategory',
+            data: { studentCourseId, categoryData }
         });
 
         const { data, errors } = await getClient().models.GradeCategory.create({
@@ -595,18 +729,29 @@ export async function createGradeCategory(
         });
 
         if (errors) {
-            console.error('[data-client] GraphQL errors creating category:', JSON.stringify(errors, null, 2));
+            logger.error('GraphQL errors creating category', {
+                source: 'createGradeCategory',
+                data: { errors, studentCourseId, categoryData }
+            });
             return null;
         }
 
-        console.log('[data-client] GradeCategory created successfully:', data);
+        logger.info('GradeCategory created successfully', {
+            source: 'createGradeCategory',
+            data: { studentCourseId, category: categoryData.category }
+        });
         return data;
     } catch (error) {
-        console.error('[data-client] Exception creating grade category:', error);
-        if (error instanceof Error) {
-            console.error('[data-client] Error name:', error.name);
-            console.error('[data-client] Error message:', error.message);
-        }
+        logger.error('Exception creating grade category', {
+            source: 'createGradeCategory',
+            data: { 
+                error,
+                errorName: error instanceof Error ? error.name : undefined,
+                errorMessage: error instanceof Error ? error.message : undefined,
+                studentCourseId,
+                categoryData
+            }
+        });
         throw error; // Re-throw so caller can handle
     }
 }
@@ -643,13 +788,19 @@ export async function createAssignment(
         });
 
         if (errors) {
-            console.error('Error creating assignment:', JSON.stringify(errors, null, 2));
+            logger.error('Error creating assignment', {
+                source: 'createAssignment',
+                data: { errors, studentCourseId, assignmentData }
+            });
             return null;
         }
 
         return data;
     } catch (error) {
-        console.error('Error creating assignment:', error);
+        logger.error('Error creating assignment', {
+            source: 'createAssignment',
+            data: { error, studentCourseId, assignmentData }
+        });
         return null;
     }
 }
@@ -673,8 +824,10 @@ export async function updateAssignment(
     const client = getClient();
 
     try {
-        console.log(`[data-client] Updating assignment ${assignmentId} for course ${studentCourseId}`);
-        console.log('[data-client] Updates:', JSON.stringify(updates, null, 2));
+        logger.debug('Updating assignment', {
+            source: 'updateAssignment',
+            data: { studentCourseId, assignmentId, updates }
+        });
 
         const { data, errors } = await client.models.Assignment.update({
             studentCourseId,
@@ -683,14 +836,23 @@ export async function updateAssignment(
         });
 
         if (errors) {
-            console.error('Error updating assignment:', JSON.stringify(errors, null, 2));
+            logger.error('Error updating assignment', {
+                source: 'updateAssignment',
+                data: { errors, studentCourseId, assignmentId, updates }
+            });
             return null;
         }
 
-        console.log('[data-client] Assignment updated successfully:', data);
+        logger.info('Assignment updated successfully', {
+            source: 'updateAssignment',
+            data: { studentCourseId, assignmentId }
+        });
         return data;
     } catch (error) {
-        console.error('Error updating assignment:', error);
+        logger.error('Error updating assignment', {
+            source: 'updateAssignment',
+            data: { error, studentCourseId, assignmentId, updates }
+        });
         return null;
     }
 }
@@ -705,7 +867,10 @@ export async function deleteAssignment(
     const client = getClient();
 
     try {
-        console.log(`[data-client] Deleting assignment ${assignmentId} from course ${studentCourseId}`);
+        logger.debug('Deleting assignment', {
+            source: 'deleteAssignment',
+            data: { studentCourseId, assignmentId }
+        });
 
         const { data, errors } = await client.models.Assignment.delete({
             studentCourseId,
@@ -713,14 +878,23 @@ export async function deleteAssignment(
         });
 
         if (errors) {
-            console.error('Error deleting assignment:', JSON.stringify(errors, null, 2));
+            logger.error('Error deleting assignment', {
+                source: 'deleteAssignment',
+                data: { errors, studentCourseId, assignmentId }
+            });
             return false;
         }
 
-        console.log('[data-client] Assignment deleted successfully:', data);
+        logger.info('Assignment deleted successfully', {
+            source: 'deleteAssignment',
+            data: { studentCourseId, assignmentId }
+        });
         return true;
     } catch (error) {
-        console.error('Error deleting assignment:', error);
+        logger.error('Error deleting assignment', {
+            source: 'deleteAssignment',
+            data: { error, studentCourseId, assignmentId }
+        });
         return false;
     }
 }
@@ -739,13 +913,19 @@ export async function getAssignment(
         });
 
         if (errors) {
-            console.error('Error fetching assignment:', errors);
+            logger.error('Error fetching assignment', {
+                source: 'getAssignment',
+                data: { errors, studentCourseId, assignmentId }
+            });
             return null;
         }
 
         return data;
     } catch (error) {
-        console.error('Error fetching assignment:', error);
+        logger.error('Error fetching assignment', {
+            source: 'getAssignment',
+            data: { error, studentCourseId, assignmentId }
+        });
         return null;
     }
 }
@@ -779,13 +959,21 @@ export async function updateStudentCourseAssessment(
         });
 
         if (errors) {
-            console.error('Error updating assessment:', errors);
+            logger.error('Error updating assessment', {
+                source: 'updateStudentCourseAssessment',
+                userId: studentId,
+                data: { errors, courseId, updates }
+            });
             return null;
         }
 
         return data;
     } catch (error) {
-        console.error('Error updating assessment:', error);
+        logger.error('Error updating assessment', {
+            source: 'updateStudentCourseAssessment',
+            userId: studentId,
+            data: { error, courseId, updates }
+        });
         return null;
     }
 }
@@ -811,13 +999,21 @@ export async function deleteStudentCourseAssessment(
         });
 
         if (errors) {
-            console.error('Error deleting assessment:', errors);
+            logger.error('Error deleting assessment', {
+                source: 'deleteStudentCourseAssessment',
+                userId: studentId,
+                data: { errors, courseId }
+            });
             return null;
         }
 
         return data;
     } catch (error) {
-        console.error('Error deleting assessment:', error);
+        logger.error('Error deleting assessment', {
+            source: 'deleteStudentCourseAssessment',
+            userId: studentId,
+            data: { error, courseId }
+        });
         return null;
     }
 }
@@ -843,13 +1039,19 @@ export async function createResource(
         });
 
         if (errors) {
-            console.error('Error creating resource:', errors);
+            logger.error('Error creating resource', {
+                source: 'createResource',
+                data: { errors, studentCourseId, resourceData }
+            });
             return null;
         }
 
         return data;
     } catch (error) {
-        console.error('Error creating resource:', error);
+        logger.error('Error creating resource', {
+            source: 'createResource',
+            data: { error, studentCourseId, resourceData }
+        });
         return null;
     }
 }
@@ -866,13 +1068,19 @@ export async function fetchResources(studentCourseId: string): Promise<Schema['C
         });
 
         if (errors) {
-            console.error('Error fetching resources:', errors);
+            logger.error('Error fetching resources', {
+                source: 'fetchResources',
+                data: { errors, studentCourseId }
+            });
             return [];
         }
 
         return data || [];
     } catch (error) {
-        console.error('Error fetching resources:', error);
+        logger.error('Error fetching resources', {
+            source: 'fetchResources',
+            data: { error, studentCourseId }
+        });
         return [];
     }
 }
@@ -891,13 +1099,19 @@ export async function deleteResource(
         });
 
         if (errors) {
-            console.error('Error deleting resource:', errors);
+            logger.error('Error deleting resource', {
+                source: 'deleteResource',
+                data: { errors, studentCourseId, resourceId }
+            });
             return false;
         }
 
         return true;
     } catch (error) {
-        console.error('Error deleting resource:', error);
+        logger.error('Error deleting resource', {
+            source: 'deleteResource',
+            data: { error, studentCourseId, resourceId }
+        });
         return false;
     }
 }

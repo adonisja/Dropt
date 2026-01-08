@@ -13,6 +13,7 @@ import { detectCurrentSemester, getSeasonLabel } from '@/lib/utils/semester-util
 import { getOrCreateUserSettings, fetchCompleteCourseData, transformToStudentCourseData } from '@/lib/api/data-client';
 import { calculateCurrentGrade } from '@/lib/logic/calculateCurrentGrade';
 import { calculateSemesterGPA } from '@/lib/logic/calculateGPA';
+import { logger } from '@/lib/utils/logger';
 
 interface DashboardAssignment {
     id: string;
@@ -152,7 +153,11 @@ export default function StudentDashboard() {
                 setRecentActivity(top3);
 
             } catch (err) {
-                console.error(err);
+                logger.error('Error loading dashboard data', {
+                    source: 'student_dashboard.loadDashboardData',
+                    userId: user?.id,
+                    data: { error: err }
+                });
             } finally {
                 setIsLoading(false);
             }

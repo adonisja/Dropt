@@ -7,6 +7,7 @@ import { useTheme } from '@/lib/theme/theme-context';
 import { useAuth } from '@/lib/auth/auth-context';
 import { fetchStudentCourses, fetchResources, createResource, deleteResource } from '@/lib/api/data-client';
 import { detectCurrentSemester } from '@/lib/utils/semester-utils';
+import { logger } from '@/lib/utils/logger';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import PlatformButton from '@/components/PlatformButton';
 
@@ -68,7 +69,11 @@ export default function ResourceHub() {
                 setSelectedCourseId(courseList[0].courseId);
             }
         } catch (error) {
-            console.error('Error loading courses:', error);
+            logger.error('Error loading courses for resource hub', {
+                source: 'resource-hub.loadCourses',
+                userId: user?.id,
+                data: { error }
+            });
         } finally {
             setIsLoading(false);
         }
@@ -91,7 +96,10 @@ export default function ResourceHub() {
             }));
             setResources(mappedResources);
         } catch (error) {
-            console.error('Error loading resources:', error);
+            logger.error('Error loading resources', {
+                source: 'resource-hub.loadResources',
+                data: { error, courseId }
+            });
         }
     };
 
@@ -133,7 +141,10 @@ export default function ResourceHub() {
             loadResources(selectedCourseId);
 
         } catch (error) {
-            console.error('Error adding resource:', error);
+            logger.error('Error adding resource', {
+                source: 'resource-hub.handleAddResource',
+                data: { error, type: newResourceType, title: newTitle }
+            });
             Alert.alert('Error', 'Failed to add resource');
         }
     };
@@ -172,7 +183,10 @@ export default function ResourceHub() {
                 Alert.alert('Error', `Don't know how to open this URL: ${url}`);
             }
         } catch (error) {
-            console.error('Error opening link:', error);
+            logger.error('Error opening resource link', {
+                source: 'resource-hub.openLink',
+                data: { error, url }
+            });
         }
     };
 

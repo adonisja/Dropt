@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/theme/theme-context';
 import PlatformButton from '@/components/PlatformButton';
 import { useRouter } from 'expo-router';
 import { AIService } from '@/lib/api/ai-service';
+import { logger } from '@/lib/utils/logger';
 
 interface ExtractedSyllabus {
     type: 'syllabus';
@@ -103,7 +104,10 @@ export default function OCRTool() {
             Alert.alert("Unsupported File", "Please select an image, text file, or PDF.");
 
         } catch (err) {
-            console.error("Error picking document:", err);
+            logger.error('Error picking document', {
+                source: 'ocr.pickDocument',
+                data: { error: err }
+            });
             Alert.alert("Error", "Failed to pick document.");
         }
     };
@@ -158,7 +162,10 @@ export default function OCRTool() {
 
     // 3. Process the content (AI Extraction)
     const processData = async () =>  {
-        console.log('[OCR] Starting processing...', { docType, inputType });
+        logger.debug('Starting OCR processing', {
+            source: 'ocr.processData',
+            data: { docType, inputType }
+        });
         if (!docType) return;
         if (inputType === 'image' && !image) return;
         if (inputType === 'text' && !textInput.trim() && !selectedFile) return;
@@ -168,13 +175,18 @@ export default function OCRTool() {
             let result;
             
             if (inputType === 'image' && image) {
-                console.log('[OCR] Processing image...');
+                logger.debug('Processing image input', {
+                    source: 'ocr.processData'
+                });
                 // 1. Convert image to Base64
                 const base64 = await getBase64(image);
                 // 2. Call AI Service with Image
                 result = await AIService.extractData<ExtractedData>({ type: 'image', base64 }, docType);
             } else if (selectedFile) {
-                console.log('[OCR] Processing file:', selectedFile.name, selectedFile.mimeType);
+                logger.debug('Processing file input', {
+                    source: 'ocr.processData',
+                    data: { fileName: selectedFile.name, mimeType: selectedFile.mimeType }
+                });
                 // 3. Call AI Service with File (PDF)
                 // For PDF on web, we also need to convert to base64 if the API expects it
                 // The current AIService implementation for 'file' type might expect a URI it can read, 
@@ -215,12 +227,17 @@ export default function OCRTool() {
                 }, docType);
 
             } else {
-                console.log('[OCR] Processing text input...');
+                logger.debug('Processing text input', {
+                    source: 'ocr.processData'
+                });
                 // 4. Call AI Service with Text
                 result = await AIService.extractData<ExtractedData>({ type: 'text', text: textInput }, docType);
             }
 
-            console.log('[OCR] Result:', result);
+            logger.debug('OCR extraction result received', {
+                source: 'ocr.processData',
+                data: { success: result.success }
+            });
 
             if (result.success && result.data) {
                 // Ensure the type matches what we expect
@@ -230,12 +247,18 @@ export default function OCRTool() {
                 // Automatically navigate to the form
                 navigateToForm(data);
             } else {
-                console.error('[OCR] Extraction failed:', result.error);
+                logger.warn('OCR extraction failed', {
+                    source: 'ocr.processData',
+                    data: { error: result.error }
+                });
                 Alert.alert("Extraction Failed", result.error || "Could not extract data. Please try again.");
             }
 
         } catch (error) {
-            console.error("[OCR] Error processing data:", error);
+            logger.error('Error processing OCR data', {
+                source: 'ocr.processData',
+                data: { error }
+            });
             Alert.alert("Error", "There was an error processing the data. Please try again.");
         } finally {
             setIsProcessing(false);
@@ -281,13 +304,6 @@ export default function OCRTool() {
         if (!extractedData) return;
         navigateToForm(extractedData);
     };
-
-    // Log state changes
-    useEffect(() => {
-        if (extractedData) {
-            console.log('[OCR] extractedData state updated:', extractedData);
-        }
-    }, [extractedData]);
 
     return (
         <View className="flex-1  p-4" style={{ backgroundColor: hexColors.background }}>

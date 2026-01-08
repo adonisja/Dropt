@@ -15,6 +15,7 @@ import {
     transformToStudentCourseData,
 } from '@/lib/api/data-client';
 import { calculateCurrentGrade } from '@/lib/logic/calculateCurrentGrade';
+import { logger } from '@/lib/utils/logger';
 
 interface AssignmentSimulation {
     assignmentId: string;
@@ -84,7 +85,11 @@ export default function WhatIfCalculator() {
 
             setIsLoading(false);
         } catch (err) {
-            console.error('Error loading course data:', err);
+            logger.error('Error loading course data for calculator', {
+                source: 'calculator.loadCourseData',
+                userId: user?.id,
+                data: { error: err, courseId }
+            });
             setError('Failed to load course data');
             setIsLoading(false);
         }

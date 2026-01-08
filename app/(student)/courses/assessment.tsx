@@ -5,6 +5,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useTheme } from "@/lib/theme/theme-context";
 import { fetchCompleteCourseData, updateStudentCourseAssessment } from "@/lib/api/data-client";
 import FormError from "@/components/FormError";
+import { logger } from '@/lib/utils/logger';
 import Animated, { FadeIn, FadeInRight, FadeOutLeft } from 'react-native-reanimated';
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -182,7 +183,11 @@ export default function CourseAssessmentPage() {
 
             setIsLoading(false);
         } catch (err) {
-            console.error(`Error loading course: ${err}`)
+            logger.error('Error loading course for assessment', {
+                source: 'assessment.loadCourseData',
+                userId: user?.id,
+                data: { error: err, courseId }
+            });
             setError(`Failed to load course data.`);
             setIsLoading(false);
         }
@@ -294,7 +299,11 @@ export default function CourseAssessmentPage() {
 
             router.back();
         } catch (err) {
-            console.error('Error saving assessment:', err);
+            logger.error('Error saving assessment', {
+                source: 'assessment.handleSave',
+                userId: user?.id,
+                data: { error: err, courseId }
+            });
             setError('Failed to save assessment.');
             setIsSaving(false);
         }

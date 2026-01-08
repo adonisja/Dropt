@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useTheme } from '@/lib/theme/theme-context';
 import { seedTestCourses } from '@/lib/api/seed-data';
+import { logger } from '@/lib/utils/logger';
 
 export default function Settings() {
     const { user, logout } = useAuth();
@@ -29,9 +30,10 @@ export default function Settings() {
     };
 
     const handleSeedData = async () => {
-        console.log('Seed Data button pressed');
         if (!user?.id) {
-            console.error('No user ID found');
+            logger.warn('Seed data attempted without user ID', {
+                source: 'settings.handleSeedData'
+            });
             if (Platform.OS === 'web') {
                 alert("Error: User ID not found. Please log in again.");
             } else {
@@ -41,18 +43,28 @@ export default function Settings() {
         }
         
         const runSeed = async () => {
-            console.log('Starting seed process...');
+            logger.info('Starting test data seed', {
+                source: 'settings.handleSeedData',
+                userId: user.id
+            });
             setIsSeeding(true);
             try {
                 await seedTestCourses(user!.id);
-                console.log('Seed process completed successfully');
+                logger.info('Test data seed completed', {
+                    source: 'settings.handleSeedData',
+                    userId: user.id
+                });
                 if (Platform.OS === 'web') {
                     alert("Success: Test data has been added. Please refresh your dashboard.");
                 } else {
                     Alert.alert("Success", "Test data has been added. Please refresh your dashboard.");
                 }
             } catch (error) {
-                console.error('Seed process failed:', error);
+                logger.error('Seed data process failed', {
+                    source: 'settings.handleSeedData',
+                    userId: user.id,
+                    data: { error }
+                });
                 const errorMessage = error instanceof Error ? error.message : String(error);
                 if (Platform.OS === 'web') {
                     alert(`Error: Failed to seed data: ${errorMessage}`);

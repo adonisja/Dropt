@@ -11,6 +11,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { fetchStudentCourses, getOrCreateUserSettings } from '@/lib/api/data-client';
 import { detectCurrentSemester } from '@/lib/utils/semester-utils';
 import type { Schema } from '@/amplify/data/resource';
+import { logger } from '@/lib/utils/logger';
 
 interface CourseStudyData {
     courseName: string;
@@ -59,7 +60,11 @@ export default function StudyHoursBreakdown() {
             setCourses(studyData);
             setTotalStudyHours(total);
         } catch (err) {
-            console.error('Error loading study hours:', err);
+            logger.error('Error loading study hours', {
+                source: 'study-hours.loadData',
+                userId: user?.id,
+                data: { error: err }
+            });
         } finally {
             setIsLoading(false);
         }

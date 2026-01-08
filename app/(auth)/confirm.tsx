@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { confirmSignUp, resendSignUpCode, signIn } from 'aws-amplify/auth';
+import { logger } from '@/lib/utils/logger';
 
 export default function ConfirmEmail() {
   const { email } = useLocalSearchParams<{ email: string }>();
@@ -34,12 +35,18 @@ export default function ConfirmEmail() {
     setIsLoading(true);
 
     try {
-      console.log('Starting confirmation process for:', email);
+      logger.info('Starting email confirmation', {
+        source: 'confirm.handleConfirm',
+        data: { email }
+      });
       await confirmSignUp({
         username: email,
         confirmationCode: code,
       });
-      console.log('Confirmation successful, attempting sign-in...');
+      logger.info('Confirmation successful, signing in', {
+        source: 'confirm.handleConfirm',
+        data: { email }
+      });
 
       // Auto sign-in after confirmation
       const { isSignedIn } = await signIn({
@@ -47,16 +54,20 @@ export default function ConfirmEmail() {
         password: password,
       });
 
-      console.log('Sign-in result:', isSignedIn);
+      logger.info('Sign-in after confirmation', {
+        source: 'confirm.handleConfirm',
+        data: { email, isSignedIn }
+      });
       if (isSignedIn) {
         router.replace('/');
       } else {
         router.replace('/(auth)/login');
       }
     } catch (err) {
-      console.error('Confirmation error (full):', JSON.stringify(err, null, 2));
-      console.error('Confirmation error (type):', typeof err);
-      console.error('Confirmation error (constructor):', err?.constructor?.name);
+      logger.error('Email confirmation failed', {
+        source: 'confirm.handleConfirm',
+        data: { error: err, email }
+      });
 
       // Enhanced error parsing
       let errorMessage = 'Confirmation failed';
@@ -64,13 +75,8 @@ export default function ConfirmEmail() {
       // Try multiple ways to extract the error message
       if (err instanceof Error) {
         errorMessage = err.message;
-        console.error('Error.message:', errorMessage);
       } else if (typeof err === 'object' && err !== null) {
         const errObj = err as any;
-
-        // Log the entire error structure for debugging
-        console.error('Error object keys:', Object.keys(errObj));
-        console.error('Error object:', errObj);
 
         // Try various error properties
         if (errObj.message) {
@@ -106,7 +112,6 @@ export default function ConfirmEmail() {
         errorMessage = 'An error occurred during confirmation. Please check your code and password, or request a new code.';
       }
 
-      console.error('Final parsed error message:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -119,14 +124,23 @@ export default function ConfirmEmail() {
     setIsResending(true);
 
     try {
-      console.log('Resending confirmation code to:', email);
+      logger.info('Resending confirmation code', {
+        source: 'confirm.handleResendCode',
+        data: { email }
+      });
       await resendSignUpCode({
         username: email,
       });
-      console.log('Code resent successfully');
+      logger.info('Confirmation code resent successfully', {
+        source: 'confirm.handleResendCode',
+        data: { email }
+      });
       setSuccess('A new confirmation code has been sent to your email');
     } catch (err) {
-      console.error('Resend code error:', err);
+      logger.error('Failed to resend confirmation code', {
+        source: 'confirm.handleResendCode',
+        data: { error: err, email }
+      });
 
       let errorMessage = 'Failed to resend code';
 
@@ -147,7 +161,6 @@ export default function ConfirmEmail() {
         }
       }
 
-      console.error('Parsed resend error:', errorMessage);
       setError(errorMessage);
     } finally {
       setIsResending(false);

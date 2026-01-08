@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useTheme } from '@/lib/theme/theme-context';
 import { fetchStudentCourses, fetchCompleteCourseData, transformToStudentCourseData } from '@/lib/api/data-client';
+import { logger } from '@/lib/utils/logger';
 import { calculateCurrentGrade } from '@/lib/logic/calculateCurrentGrade';
 import { convertGradeToGPA, getLetterGradeFromGPA } from '@/lib/logic/calculateGPA';
 import { groupCoursesByYearAndSemester } from '@/lib/utils/semester-utils';
@@ -99,7 +100,11 @@ export default function CourseArchive() {
             setUncategorizedCourses(uncategorized);
 
         } catch (err) {
-            console.error('Error loading archive:', err);
+            logger.error('Error loading course archive', {
+                source: 'courses.archive.loadArchive',
+                userId: user?.id,
+                data: { error: err }
+            });
             setError('Failed to load course archive');
         } finally {
             setIsLoading(false);

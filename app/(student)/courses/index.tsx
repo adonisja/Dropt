@@ -20,6 +20,7 @@ import {
 import type { Schema } from '@/amplify/data/resource';
 import { getOrCreateUserSettings } from '@/lib/api/data-client';
 import { detectCurrentSemester } from '@/lib/utils/semester-utils';
+import { logger } from '@/lib/utils/logger';
 
 interface CourseGradeData {
     course: Schema['StudentCourse']['type'];
@@ -123,7 +124,11 @@ export default function StudentDashboard() {
             setCourses(courseGrades);
         
         } catch (err) {
-            console.error('Error loading course data:', err);
+            logger.error('Error loading course data', {
+                source: 'courses.index.loadCourses',
+                userId: user?.id,
+                data: { error: err }
+            });
             const errorMessage = err instanceof Error ? err.message : 'Unknown error';
             if (errorMessage.includes('Network') || errorMessage.includes('fetch')) {
                 setError('Unable to connect. Please check your internet connection and try again.');

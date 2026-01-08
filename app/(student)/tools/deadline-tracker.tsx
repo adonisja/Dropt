@@ -139,7 +139,11 @@ export default function DeadlineTracker() {
 
             setAssignments(processed);
         } catch (error) {
-            console.error('Error loading deadline data:', error);
+            logger.error('Error loading deadline data', {
+                source: 'deadline-tracker.loadData',
+                userId: user?.id,
+                data: { error }
+            });
         } finally {
             setIsLoading(false);
             setRefreshing(false);

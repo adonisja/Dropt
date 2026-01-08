@@ -19,6 +19,7 @@ import {
     getAssignment, // Import getAssignment
     updateAssignment,
 } from '@/lib/api/data-client';
+import { logger } from '@/lib/utils/logger';
 import type { Schema } from '@/amplify/data/resource';
 import PlatformButton from '@/components/PlatformButton';
 import FormError from '@/components/FormError';
@@ -89,7 +90,11 @@ export default function EditAssignment() {
                 }
             }
         } catch (err) {
-            console.error('Error loading data:', err);
+            logger.error('Error loading assignment for edit', {
+                source: 'assignments.edit.loadData',
+                userId: user?.id,
+                data: { error: err, assignmentId }
+            });
             setFormError('Failed to load assignment data.');
         } finally {
             setIsLoading(false);
@@ -177,7 +182,11 @@ export default function EditAssignment() {
                 setFormError('Failed to update assignment. Please try again.');
             }
         } catch (err) {
-            console.error('Error updating assignment:', err);
+            logger.error('Error updating assignment', {
+                source: 'assignments.edit.handleUpdate',
+                userId: user?.id,
+                data: { error: err, assignmentId }
+            });
             setFormError('An unexpected error occurred.');
         } finally {
             setIsSubmitting(false);

@@ -1,5 +1,6 @@
 import { Amplify } from 'aws-amplify';
 import 'react-native-get-random-values';
+import { logger } from '@/lib/utils/logger';
 
 // This will be populated after running `npx ampx sandbox`
 // The amplify_outputs.json file is generated automatically
@@ -17,9 +18,14 @@ export async function configureAmplify() {
     
     Amplify.configure(config);
     amplifyConfigured = true;
-    console.log('Amplify configured successfully');
+    logger.info('Amplify configured successfully', {
+      source: 'amplify-config.configureAmplify'
+    });
   } catch (error) {
-    console.warn('Amplify outputs not found. Run `npx ampx sandbox` to generate.');
+    logger.warn('Amplify outputs not found - run npx ampx sandbox to generate', {
+      source: 'amplify-config.configureAmplify',
+      data: { error }
+    });
   }
 }
 

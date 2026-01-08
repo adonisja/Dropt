@@ -72,7 +72,11 @@ export default function CourseDetails() {
                 setCourseData(data);
             }
         } catch (err) {
-            console.error('Error loading course data:', err);
+            logger.error('Error loading course details', {
+                source: 'courses.[id].loadCourseData',
+                userId: user?.id,
+                data: { error: err, courseId: id }
+            });
             const errorMessage = err instanceof Error ? err.message : 'Unknown error';
             if (errorMessage.includes('Network') || errorMessage.includes('fetch')) {
                 setError('Unable to connect. Please check your internet connection.');
@@ -156,27 +160,42 @@ export default function CourseDetails() {
                 try {
                     const cachedAdvice = await AsyncStorage.getItem(cacheKey);
                     if (cachedAdvice) {
-                        console.log('Using cached AI advice');
+                        logger.debug('Using cached AI advice', {
+                            source: 'courses.[id].loadAIAdvice',
+                            data: { courseName: courseData.studentCourse.courseName }
+                        });
                         setAiAdvice(cachedAdvice);
                         return;
                     }
                 } catch (e) {
-                    console.log('Error reading cache', e);
+                    logger.debug('Error reading AI advice cache', {
+                        source: 'courses.[id].loadAIAdvice',
+                        data: { error: e }
+                    });
                 }
 
                 // If not in cache, generate new advice
                 try {
-                    console.log('Generating new AI advice for:', courseData.studentCourse.courseName);
+                    logger.debug('Generating new AI advice', {
+                        source: 'courses.[id].loadAIAdvice',
+                        data: { courseName: courseData.studentCourse.courseName }
+                    });
                     const advice = await generateAIAdviceForCourse(input, recommendationScore);
                     if (advice) {
                         setAiAdvice(advice);
                         await AsyncStorage.setItem(cacheKey, advice);
                     } else {
-                        console.warn('AI returned empty advice for:', courseData.studentCourse.courseName);
+                        logger.warn('AI returned empty advice', {
+                            source: 'courses.[id].loadAIAdvice',
+                            data: { courseName: courseData.studentCourse.courseName }
+                        });
                         setAiAdvice('Unable to generate personalized advice at this time. Please try again later.');
                     }
                 } catch (e) {
-                    console.error('Error generating advice for', courseData.studentCourse.courseName, ':', e);
+                    logger.error('Error generating AI advice', {
+                        source: 'courses.[id].loadAIAdvice',
+                        data: { error: e, courseName: courseData.studentCourse.courseName }
+                    });
                     // Set a fallback message so user knows there was an issue
                     setAiAdvice('Unable to generate personalized advice at this time. Please check your connection and try again.');
                 }
@@ -327,7 +346,10 @@ export default function CourseDetails() {
 
     // Handle delete assignment
     const handleDeleteAssignment = async (assignmentId: string, assignmentName: string) => {
-        console.log('Delete requested for:', assignmentId);
+        logger.debug('Delete assignment requested', {
+            source: 'courses.[id].handleDeleteAssignment',
+            data: { assignmentId, courseId }
+        });
         
         const performDelete = async () => {
             if (!user?.id || !courseId) return;

@@ -5,6 +5,7 @@ import { detectCurrentSemester, type Season } from '../utils/semester-utils';
 import { colorPalettes, type SeasonalColors } from './seasonal-colors';
 import { applySeasonalTheme } from './apply-theme';
 import { getThemeColors, createThemedStyles } from './theme-styles';
+import { logger } from '../utils/logger';
 
 
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -72,7 +73,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setSeasonState(savedSeason as Season)
       }
     } catch (error) {
-      console.error('Error loading theme preferences:', error);
+      logger.error('Error loading theme preferences', {
+        source: 'theme-context.loadPreferences',
+        data: { error }
+      });
     } finally {
       setIsLoaded (true);
     }
@@ -92,7 +96,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setColorScheme(mode as any);
       }
     } catch (error) {
-      console.error('Error saving theme preference:', error);
+      logger.error('Error saving theme preference', {
+        source: 'theme-context.setThemeMode',
+        data: { error, mode }
+      });
     }
   };
 
@@ -101,7 +108,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       await AsyncStorage.setItem(STORAGE_KEYS.SEASON, newSeason);
       setSeasonState(newSeason);
     } catch (error) {
-      console.error('Error saving season preferences:', error);
+      logger.error('Error saving season preference', {
+        source: 'theme-context.setSeason',
+        data: { error, season: newSeason }
+      });
     }
   };
 

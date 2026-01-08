@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { signIn, signUp, signOut, getCurrentUser, fetchUserAttributes, confirmSignUp, resetPassword as amplifyResetPassword, confirmResetPassword as amplifyConfirmResetPassword } from 'aws-amplify/auth';
 import { configureAmplify } from '../api/amplify-config';
 import { AuthState, AuthContextType, LoginCredentials, RegisterData, User, UserRole } from './auth-types';
+import { logger } from '@/lib/utils/logger';
 
 // Initial state
 const initialState: AuthState = {
@@ -137,17 +138,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'AUTH_START' });
 
     try {
-      console.log('Attempting sign in for:', credentials.email);
+      logger.debug('Attempting user sign in', {
+        source: 'auth-context.login',
+        data: { email: credentials.email }
+      });
+      
       const { isSignedIn, nextStep } = await signIn({
         username: credentials.email,
         password: credentials.password,
       });
 
-      console.log('Sign in result:', { isSignedIn, nextStep });
+      logger.debug('Sign in result received', {
+        source: 'auth-context.login',
+        data: { isSignedIn, signInStep: nextStep.signInStep }
+      });
 
       if (isSignedIn) {
         const user = await cognitoToUser();
-        console.log('User authenticated:', user);
+        logger.info('User authenticated successfully', {
+          source: 'auth-context.login',
+          userId: user.id,
+          data: { email: user.email, role: user.role }
+        });
         dispatch({ type: 'AUTH_SUCCESS', payload: user });
       } else if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
         dispatch({ type: 'NEEDS_CONFIRMATION', payload: credentials.email });
@@ -160,29 +172,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(`Unexpected sign in step: ${nextStep.signInStep}`);
       }
     } catch (error) {
-      console.error('Sign in error (full):', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-      console.error('Sign in error (type):', typeof error);
-      console.error('Sign in error (constructor):', error?.constructor?.name);
+      logger.error('Sign in error encountered', {
+        source: 'auth-context.login',
+        data: {
+          error,
+          errorType: typeof error,
+          errorConstructor: error?.constructor?.name
+        }
+      });
 
       let errorMessage = 'Login failed';
 
       // Try multiple ways to extract the error message
       if (error instanceof Error) {
         errorMessage = error.message;
-        console.error('Error.message:', errorMessage);
 
         // Handle the case where a user is already signed in
         if (errorMessage.includes('already a signed in user')) {
-          console.log('User already signed in, signing out and retrying...');
+          logger.warn('User already signed in, signing out and retrying', {
+            source: 'auth-context.login'
+          });
           await signOut();
           return login(credentials);
         }
       } else if (typeof error === 'object' && error !== null) {
         const errObj = error as any;
-
-        // Log the entire error structure for debugging
-        console.error('Error object keys:', Object.keys(errObj));
-        console.error('Error object:', errObj);
 
         // Try various error properties
         if (errObj.message) {
@@ -217,7 +231,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         errorMessage = 'Login failed. Please check your credentials and try again.';
       }
 
-      console.error('Final parsed error message:', errorMessage);
+      logger.error('Authentication failed with parsed error', {
+        source: 'auth-context.login',
+        data: { errorMessage, originalError: error }
+      });
+      
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
       throw new Error(errorMessage);
     }
@@ -251,8 +269,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(`Unexpected sign up step: ${nextStep.signUpStep}`);
       }
     } catch (error) {
-      console.error('Registration error (full):', JSON.stringify(error, null, 2));
-      console.error('Registration error (type):', typeof error);
+      logger.error('Registration error encountered', {
+        source: 'auth-context.register',
+        data: {
+          error,
+          errorType: typeof error,
+          email: data.email
+        }
+      });
 
       let errorMessage = 'Registration failed';
 
@@ -284,7 +308,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         errorMessage = 'Registration failed. Please check your information and try again.';
       }
 
-      console.error('Final parsed registration error:', errorMessage);
+      logger.error('Registration failed with parsed error', {
+        source: 'auth-context.register',
+        data: { errorMessage, email: data.email }
+      });
+      
       dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
       throw new Error(errorMessage);
     }
@@ -294,9 +322,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async (): Promise<void> => {
     try {
       await signOut();
+      logger.info('User signed out successfully', {
+        source: 'auth-context.logout'
+      });
       dispatch({ type: 'LOGOUT' });
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Error during logout', {
+        source: 'auth-context.logout',
+        data: { error }
+      });
       dispatch({ type: 'LOGOUT' });
     }
   };
@@ -314,7 +348,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Password reset already complete. Please login.');
       }
     } catch (error) {
-      console.error('Reset password error:', error);
+      logger.error('Reset password error', {
+        source: 'auth-context.resetPassword',
+        data: { error, email }
+      });
       let errorMessage = 'Failed to send reset code';
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -335,7 +372,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       dispatch({ type: 'INIT_COMPLETE' });
     } catch (error) {
-      console.error('Confirm reset password error:', error);
+      logger.error('Confirm reset password error', {
+        source: 'auth-context.confirmResetPassword',
+        data: { error, email }
+      });
       let errorMessage = 'Failed to reset password';
       if (error instanceof Error) {
         errorMessage = error.message;

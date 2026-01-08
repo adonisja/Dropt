@@ -8,6 +8,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useTheme } from '@/lib/theme/theme-context';
 import { createStudentCourse, createGradeCategory } from '@/lib/api/data-client';
+import { logger } from '@/lib/utils/logger';
 import SuccessScreen from '@/components/SuccessScreen';
 
 
@@ -58,7 +59,10 @@ export default function AddCourse() {
             try {
                 return JSON.parse(params.prefillCategories);
             } catch (e) {
-                console.error('Failed to parse prefillCategories:', e);
+                logger.warn('Failed to parse prefillCategories from params', {
+                    source: 'courses.add.initialState',
+                    data: { error: e }
+                });
                 return DEFAULT_CATEGORIES;
             }
         }
@@ -220,7 +224,10 @@ export default function AddCourse() {
             try {
                 setCategories(JSON.parse(params.prefillCategories));
             } catch (e) {
-                console.error('Failed to parse prefillCategories in useEffect:', e);
+                logger.warn('Failed to parse prefillCategories in useEffect', {
+                    source: 'courses.add.useEffect',
+                    data: { error: e }
+                });
             }
         }
     }, [

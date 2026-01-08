@@ -6,6 +6,7 @@ import PlatformButton from '@/components/PlatformButton';
 import { Picker } from '@react-native-picker/picker';
 import { fetchStudentCourses, createAssignment, fetchGradeCategories, fetchAssignments } from '@/lib/api/data-client';
 import { useAuth } from '@/lib/auth/auth-context';
+import { logger } from '@/lib/utils/logger';
 import { Ionicons } from '@expo/vector-icons';
 import type { Schema } from '@/amplify/data/resource';
 import { getNextAssignmentID } from '@/lib/utils/id-generators';
@@ -49,7 +50,10 @@ export default function BatchAddAssignments() {
                 }));
                 setAssignments(mapped);
             } catch (e) {
-                console.error("Failed to parse assignments", e);
+                logger.warn('Failed to parse assignments parameter', {
+                    source: 'batch-add.useEffect',
+                    data: { error: e }
+                });
             }
         }
     }, []);
@@ -83,7 +87,11 @@ export default function BatchAddAssignments() {
                 setSelectedCourseId(data[0].courseId);
             }
         } catch (error) {
-            console.error("Error fetching courses:", error);
+            logger.error('Error loading courses for batch add', {
+                source: 'batch-add.loadCourses',
+                userId: user?.id,
+                data: { error }
+            });
             Alert.alert("Error", "Failed to load courses.");
         } finally {
             setIsLoading(false);
@@ -97,7 +105,11 @@ export default function BatchAddAssignments() {
             const cats = await fetchGradeCategories(studentCourseId);
             setCategories(cats);
         } catch (error) {
-            console.error("Error fetching categories:", error);
+            logger.error('Error loading categories for batch add', {
+                source: 'batch-add.loadCategories',
+                userId: user?.id,
+                data: { error, courseId }
+            });
         }
     };
 
@@ -156,7 +168,11 @@ export default function BatchAddAssignments() {
                 { text: "OK", onPress: () => router.push(`/(student)/courses/${selectedCourseId}`) }
             ]);
         } catch (error) {
-            console.error("Error saving assignments:", error);
+            logger.error('Error saving batch assignments', {
+                source: 'batch-add.handleSaveAll',
+                userId: user?.id,
+                data: { error, courseId: selectedCourseId }
+            });
             Alert.alert("Error", "Failed to save some assignments.");
         } finally {
             setIsSaving(false);

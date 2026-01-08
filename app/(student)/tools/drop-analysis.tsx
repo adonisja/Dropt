@@ -7,6 +7,7 @@ import { useTheme } from '@/lib/theme/theme-context';
 import { useAuth } from '@/lib/auth/auth-context';
 import { fetchStudentCourses, fetchCompleteCourseData, transformToStudentCourseData } from '@/lib/api/data-client';
 import { calculateCurrentGrade } from '@/lib/logic/calculateCurrentGrade';
+import { logger } from '@/lib/utils/logger';
 import { calculateRecommendation, RecommendationResult, RecommendationInput, generateAIAdviceForCourse } from '@/lib/logic/recommendation-engine';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -401,7 +402,11 @@ export default function DropAnalysis() {
 
             setAnalyses(results);
         } catch (error) {
-            console.error('Error loading drop analysis:', error);
+            logger.error('Error loading drop analysis', {
+                source: 'drop-analysis.loadData',
+                userId: user?.id,
+                data: { error }
+            });
             Alert.alert('Error', 'Failed to load analysis data');
         } finally {
             setIsLoading(false);

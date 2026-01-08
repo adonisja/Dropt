@@ -23,6 +23,7 @@ import { getNextAssignmentID } from '@/lib/utils/id-generators';
 import type { Schema } from '@/amplify/data/resource';
 import PlatformButton from '@/components/PlatformButton';
 import FormError from '@/components/FormError';
+import { logger } from '@/lib/utils/logger';
 import SuccessScreen from '@/components/SuccessScreen';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
@@ -75,7 +76,11 @@ export default function AddAssignment() {
 
             // Default category removed to force user selection
         } catch (err) {
-            console.error('Error loading data:', err);
+            logger.error('Error loading assignment form data', {
+                source: 'assignments.add.loadData',
+                userId: user?.id,
+                data: { error: err, courseId }
+            });
             setFormError('Failed to load course data. Please go back and try again.');
         } finally {
             setIsLoading(false);
@@ -111,11 +116,12 @@ export default function AddAssignment() {
     };
 
     const handleSubmit = async () => {
-        console.log('=== handleSubmit called ===');
-
         const error = validateForm();
         if (error) {
-            console.log('Validation error:', error);
+            logger.debug('Assignment form validation failed', {
+                source: 'assignments.add.handleSubmit',
+                data: { error }
+            });
             setFormError(error);
             return;
         }
@@ -156,7 +162,11 @@ export default function AddAssignment() {
             // Show success screen
             setSuccessData({ name: assignmentName.trim(), id: assignmentId });
         } catch (err) {
-            console.error('Error creating assignment:', err);
+            logger.error('Error creating assignment', {
+                source: 'assignments.add.handleSubmit',
+                userId: user?.id,
+                data: { error: err, courseId }
+            });
             setFormError('Failed to create assignment. Please try again.');
         } finally {
             setIsSubmitting(false);
@@ -370,10 +380,7 @@ export default function AddAssignment() {
 
                 <PlatformButton
                     style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-                    onPress={() => {
-                        console.log('Add Assignment button pressed');
-                        handleSubmit();
-                    }}
+                    onPress={handleSubmit}
                     disabled={isSubmitting}
                 >
                     <Text style={styles.submitButtonText}>
